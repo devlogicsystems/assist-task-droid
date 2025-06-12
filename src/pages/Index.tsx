@@ -128,7 +128,7 @@ const Index = () => {
             <Button
               onClick={() => setIsCreateModalOpen(true)}
               size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+              className="bg-white text-primary hover:bg-white/90 border border-white shadow-lg font-medium"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Task
@@ -173,12 +173,12 @@ const Index = () => {
       {/* Search and Filter Section */}
       <div className="p-6 space-y-4 bg-white border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             placeholder="Search tasks or assignees..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11 h-12 text-base border-2 focus:border-primary"
+            className="pl-11 h-12 text-base border-2 focus:border-primary bg-white text-foreground placeholder:text-gray-400"
           />
         </div>
 
@@ -191,8 +191,8 @@ const Index = () => {
               size="sm"
               className={`whitespace-nowrap ${
                 selectedFilter === filter 
-                  ? 'bg-primary shadow-lg' 
-                  : 'bg-white hover:bg-gray-50 border-2'
+                  ? 'bg-primary text-primary-foreground shadow-lg' 
+                  : 'bg-white hover:bg-gray-50 border-2 text-foreground'
               }`}
             >
               {filter === 'all' && 'All Tasks'}

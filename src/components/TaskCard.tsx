@@ -108,7 +108,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
           {task.labels.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {task.labels.map((label, index) => (
-                <Badge key={index} variant="secondary" className="text-xs px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                <Badge key={index} variant="secondary" className="text-xs px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-200 font-medium">
                   {label}
                 </Badge>
               ))}
@@ -118,33 +118,33 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
 
         {/* Card Content */}
         <div className="px-5 pb-4 space-y-3">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              <span className="font-medium">{task.assignee}</span>
+              <User className="w-4 h-4 text-gray-600" />
+              <span className="font-medium text-foreground">{task.assignee}</span>
             </div>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <Calendar className="w-4 h-4 text-gray-600" />
               <span className={`font-medium ${isOverdue() ? 'text-destructive' : 'text-foreground'}`}>
                 {formatDateTime()}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>Reminder: {task.reminderTime}</span>
+              <Clock className="w-4 h-4 text-gray-600" />
+              <span className="text-foreground">Reminder: {task.reminderTime}</span>
             </div>
           </div>
 
           {task.url && (
             <div className="flex items-center gap-3 text-sm">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
+                <FileText className="w-4 h-4 text-gray-600" />
                 <a href={task.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                   View Link
                 </a>
