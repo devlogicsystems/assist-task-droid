@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Plus, Search, Filter, User, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import TaskCard from '@/components/TaskCard';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import FilterPanel from '@/components/FilterPanel';
+import DarkModeToggle from '@/components/DarkModeToggle';
 import { Task, TaskStatus } from '@/types/task';
 
 const sampleTasks: Task[] = [
@@ -108,15 +108,7 @@ const Index = () => {
       <div className="gradient-header text-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-black/10">
-          <div className="absolute inset-0 opacity-10">
-            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-              <g fill="none" fillRule="evenodd">
-                <g fill="#ffffff" fillOpacity="0.1">
-                  <circle cx="30" cy="30" r="2"/>
-                </g>
-              </g>
-            </svg>
-          </div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
         </div>
         
         <div className="relative p-6 pb-8">
@@ -125,14 +117,17 @@ const Index = () => {
               <h1 className="text-3xl font-bold">TaskFlow</h1>
               <p className="text-white/80 text-sm mt-1">Organize your work efficiently</p>
             </div>
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              size="sm"
-              className="bg-white text-primary hover:bg-white/90 border border-white shadow-lg font-medium"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Task
-            </Button>
+            <div className="flex items-center gap-3">
+              <DarkModeToggle />
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                size="sm"
+                className="bg-white text-primary hover:bg-white/90 border border-white shadow-lg font-medium"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Task
+              </Button>
+            </div>
           </div>
 
           {/* Stats Cards */}
