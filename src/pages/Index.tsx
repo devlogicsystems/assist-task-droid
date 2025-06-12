@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Calendar, Plus, Search, Filter, User, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Plus, Search, Filter, User, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import TaskCard from '@/components/TaskCard';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import FilterPanel from '@/components/FilterPanel';
@@ -103,46 +104,73 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">TaskFlow</h1>
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            size="sm"
-            className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Task
-          </Button>
+      {/* Modern Header with Gradient */}
+      <div className="gradient-header text-white relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-black/10">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
         </div>
+        
+        <div className="relative p-6 pb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">TaskFlow</h1>
+              <p className="text-white/80 text-sm mt-1">Organize your work efficiently</p>
+            </div>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              size="sm"
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Task
+            </Button>
+          </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{getTasksByStatus('assigned')}</div>
-            <div className="text-sm opacity-90">Assigned</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{getTasksByStatus('in-progress')}</div>
-            <div className="text-sm opacity-90">In Progress</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{getTasksByStatus('closed')}</div>
-            <div className="text-sm opacity-90">Completed</div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-4">
+            <Card className="glass-effect">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <User className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('assigned')}</div>
+                <div className="text-sm text-muted-foreground">Assigned</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="glass-effect">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Clock className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('in-progress')}</div>
+                <div className="text-sm text-muted-foreground">In Progress</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="glass-effect">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('closed')}</div>
+                <div className="text-sm text-muted-foreground">Completed</div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="p-4 space-y-3">
+      {/* Search and Filter Section */}
+      <div className="p-6 space-y-4 bg-white border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
             placeholder="Search tasks or assignees..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-11 h-12 text-base border-2 focus:border-primary"
           />
         </div>
 
@@ -153,7 +181,11 @@ const Index = () => {
               onClick={() => setSelectedFilter(filter as any)}
               variant={selectedFilter === filter ? 'default' : 'outline'}
               size="sm"
-              className="whitespace-nowrap"
+              className={`whitespace-nowrap ${
+                selectedFilter === filter 
+                  ? 'bg-primary shadow-lg' 
+                  : 'bg-white hover:bg-gray-50 border-2'
+              }`}
             >
               {filter === 'all' && 'All Tasks'}
               {filter === 'today' && 'Today'}
@@ -166,32 +198,35 @@ const Index = () => {
       </div>
 
       {/* Tasks List */}
-      <div className="px-4 pb-20">
-        <div className="space-y-3">
-          {getFilteredTasks().map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onUpdate={handleUpdateTask}
-            />
-          ))}
-          {getFilteredTasks().length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No tasks found</p>
+      <div className="px-6 py-4 pb-20">
+        {getFilteredTasks().length > 0 ? (
+          <div className="space-y-4">
+            {getFilteredTasks().map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onUpdate={handleUpdateTask}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-        </div>
+            <h3 className="text-lg font-medium text-foreground mb-2">No tasks found</h3>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+          </div>
+        )}
       </div>
 
-      {/* Create Task Modal */}
+      {/* Modals */}
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateTask}
       />
 
-      {/* Filter Panel */}
       <FilterPanel
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}

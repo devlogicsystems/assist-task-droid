@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Calendar, Clock, User, Edit, CheckCircle, PlayCircle, FileText } from 'lucide-react';
+import { Calendar, Clock, User, Edit, CheckCircle, PlayCircle, FileText, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -85,66 +85,77 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
   };
 
   return (
-    <Card className={`task-card ${isOverdue() ? 'border-red-200 bg-red-50' : ''}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex-1">
-            <h3 className="font-medium text-foreground mb-1">{task.subject}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">{task.details}</p>
-          </div>
-          <Button
-            onClick={() => setIsExpanded(!isExpanded)}
-            variant="ghost"
-            size="sm"
-            className="ml-2"
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Labels */}
-        {task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {task.labels.map((label, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {label}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Task Info */}
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            <span>{task.assignee}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span className={isOverdue() ? 'text-red-600 font-medium' : ''}>
-              {formatDateTime()}
-            </span>
+    <Card className={`task-card ${isOverdue() ? 'border-destructive/30 bg-red-50/50' : ''} hover:scale-[1.02] transition-transform`}>
+      <CardContent className="p-0">
+        {/* Card Header */}
+        <div className="p-5 pb-3">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg text-foreground mb-2 leading-tight">{task.subject}</h3>
+              <p className="text-muted-foreground line-clamp-2 leading-relaxed">{task.details}</p>
+            </div>
+            <Button
+              onClick={() => setIsExpanded(!isExpanded)}
+              variant="ghost"
+              size="sm"
+              className="ml-3 h-8 w-8 p-0 hover:bg-gray-100"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>Reminder: {task.reminderTime}</span>
-          </div>
-
-          {task.url && (
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              <a href={task.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                View Link
-              </a>
+          {/* Labels */}
+          {task.labels.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {task.labels.map((label, index) => (
+                <Badge key={index} variant="secondary" className="text-xs px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  {label}
+                </Badge>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Status and Actions */}
-        <div className="flex items-center justify-between mt-4">
-          <Badge className={`${getStatusColor(task.status)} flex items-center gap-1`}>
+        {/* Card Content */}
+        <div className="px-5 pb-4 space-y-3">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span className="font-medium">{task.assignee}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <span className={`font-medium ${isOverdue() ? 'text-destructive' : 'text-foreground'}`}>
+                {formatDateTime()}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Reminder: {task.reminderTime}</span>
+            </div>
+          </div>
+
+          {task.url && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                <a href={task.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                  View Link
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Card Footer */}
+        <div className="px-5 py-4 bg-gray-50/50 border-t border-border/50 flex items-center justify-between">
+          <Badge className={`${getStatusColor(task.status)} flex items-center gap-1.5 px-3 py-1.5 font-medium`}>
             {getStatusIcon(task.status)}
             {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </Badge>
@@ -152,11 +163,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
           <Button
             onClick={handleStatusChange}
             size="sm"
-            variant="outline"
+            variant={task.status === 'closed' ? 'secondary' : 'default'}
             disabled={task.status === 'closed'}
+            className="font-medium"
           >
             {task.status === 'assigned' && 'Start Task'}
-            {task.status === 'in-progress' && 'Complete Task'}
+            {task.status === 'in-progress' && 'Complete'}
             {task.status === 'closed' && 'Completed'}
           </Button>
         </div>
