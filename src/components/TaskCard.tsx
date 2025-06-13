@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { Calendar, Clock, User, Edit, CheckCircle, PlayCircle, FileText, MoreHorizontal } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle, PlayCircle, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Task, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
 
@@ -61,7 +60,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
 
   const formatDateTime = () => {
     const date = new Date(task.dueDate);
-    const dateStr = format(date, 'MMM dd, yyyy');
+    const dateStr = format(date, 'MMM dd');
     
     if (task.isFullDay) {
       return `${dateStr} (Full Day)`;
@@ -85,95 +84,110 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
   };
 
   return (
-    <Card className={`task-card ${isOverdue() ? 'border-destructive/30 bg-red-50/50' : ''} hover:scale-[1.02] transition-transform`}>
-      <CardContent className="p-0">
-        {/* Card Header */}
-        <div className="p-5 pb-3">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg text-foreground mb-2 leading-tight">{task.subject}</h3>
-              <p className="text-muted-foreground line-clamp-2 leading-relaxed">{task.details}</p>
-            </div>
-            <Button
-              onClick={() => setIsExpanded(!isExpanded)}
-              variant="ghost"
-              size="sm"
-              className="ml-3 h-8 w-8 p-0 hover:bg-gray-100"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue() ? 'border-l-4 border-l-destructive' : ''}`}>
+      {/* Main List Item Row */}
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          {/* Expand/Collapse Icon */}
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10">
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </Button>
 
-          {/* Labels */}
-          {task.labels.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {task.labels.map((label, index) => (
-                <Badge key={index} variant="secondary" className="text-xs px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-200 font-medium">
-                  {label}
-                </Badge>
-              ))}
+          {/* Task Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold text-primary text-sm truncate pr-2">{task.subject}</h3>
+              <Badge className={`${getStatusColor(task.status)} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
+                {getStatusIcon(task.status)}
+                {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </Badge>
             </div>
-          )}
-        </div>
-
-        {/* Card Content */}
-        <div className="px-5 pb-4 space-y-3">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-600" />
-              <span className="font-medium text-foreground">{task.assignee}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-600" />
-              <span className={`font-medium ${isOverdue() ? 'text-destructive' : 'text-foreground'}`}>
-                {formatDateTime()}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-600" />
-              <span className="text-foreground">Reminder: {task.reminderTime}</span>
-            </div>
-          </div>
-
-          {task.url && (
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gray-600" />
-                <a href={task.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                  View Link
-                </a>
+            
+            <div className="flex items-center text-xs text-muted-foreground space-x-4">
+              <div className="flex items-center gap-1">
+                <User className="w-3 h-3" />
+                <span className="truncate">{task.assignee}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                <span className={`${isOverdue() ? 'text-destructive' : ''}`}>
+                  {formatDateTime()}
+                </span>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Card Footer */}
-        <div className="px-5 py-4 bg-gray-50/50 border-t border-border/50 flex items-center justify-between">
-          <Badge className={`${getStatusColor(task.status)} flex items-center gap-1.5 px-3 py-1.5 font-medium`}>
-            {getStatusIcon(task.status)}
-            {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          </Badge>
-          
-          <Button
-            onClick={handleStatusChange}
-            size="sm"
-            variant={task.status === 'closed' ? 'secondary' : 'default'}
-            disabled={task.status === 'closed'}
-            className="font-medium"
-          >
-            {task.status === 'assigned' && 'Start Task'}
-            {task.status === 'in-progress' && 'Complete'}
-            {task.status === 'closed' && 'Completed'}
-          </Button>
+        {/* Action Button */}
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleStatusChange();
+          }}
+          size="sm"
+          variant={task.status === 'closed' ? 'secondary' : 'default'}
+          disabled={task.status === 'closed'}
+          className="ml-2 text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground shrink-0"
+        >
+          {task.status === 'assigned' && 'Start'}
+          {task.status === 'in-progress' && 'Complete'}
+          {task.status === 'closed' && 'Done'}
+        </Button>
+      </div>
+
+      {/* Expanded Content */}
+      {isExpanded && (
+        <div className="px-4 pb-4 border-t border-border/20 animate-expand">
+          <div className="pt-3 space-y-3">
+            {/* Task Details */}
+            <div>
+              <p className="text-sm text-foreground leading-relaxed">{task.details}</p>
+            </div>
+
+            {/* Labels */}
+            {task.labels.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {task.labels.map((label, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs px-2 py-1 bg-secondary/20 text-secondary border border-secondary/30">
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Additional Info */}
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Clock className="w-3 h-3" />
+                <span>Reminder: {task.reminderTime}</span>
+              </div>
+              
+              {task.url && (
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3 h-3" />
+                  <a 
+                    href={task.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-accent hover:text-accent/80 underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View Link
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

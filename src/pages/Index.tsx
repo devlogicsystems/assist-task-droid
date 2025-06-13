@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Plus, Search, Filter, User, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,9 +104,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Modern Header with Gradient */}
-      <div className="gradient-header text-white relative overflow-hidden">
-        {/* Background Pattern */}
+      {/* Modern Header with Corporate Colors */}
+      <div className="bg-primary text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10">
           <div className="absolute inset-0 opacity-10">
             <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -123,15 +121,15 @@ const Index = () => {
         <div className="relative p-6 pb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold">TaskFlow</h1>
-              <p className="text-white/80 text-sm mt-1">Organize your work efficiently</p>
+              <h1 className="text-3xl font-bold text-primary-foreground">TaskFlow</h1>
+              <p className="text-primary-foreground/80 text-sm mt-1">Organize your work efficiently</p>
             </div>
             <div className="flex items-center gap-3">
               <DarkModeToggle />
               <Button
                 onClick={() => setIsCreateModalOpen(true)}
                 size="sm"
-                className="bg-white text-primary hover:bg-white/90 border border-white shadow-lg font-medium"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 border border-accent shadow-lg font-medium"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Task
@@ -141,48 +139,42 @@ const Index = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
-            <Card className="glass-effect">
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('assigned')}</div>
-                <div className="text-sm text-muted-foreground">Assigned</div>
-              </CardContent>
-            </Card>
+            <div className="glass-effect rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <User className="w-5 h-5 text-accent" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{getTasksByStatus('assigned')}</div>
+              <div className="text-sm text-muted-foreground">Assigned</div>
+            </div>
             
-            <Card className="glass-effect">
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Clock className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('in-progress')}</div>
-                <div className="text-sm text-muted-foreground">In Progress</div>
-              </CardContent>
-            </Card>
+            <div className="glass-effect rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="w-5 h-5 text-secondary" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{getTasksByStatus('in-progress')}</div>
+              <div className="text-sm text-muted-foreground">In Progress</div>
+            </div>
             
-            <Card className="glass-effect">
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div className="text-2xl font-bold text-foreground">{getTasksByStatus('closed')}</div>
-                <div className="text-sm text-muted-foreground">Completed</div>
-              </CardContent>
-            </Card>
+            <div className="glass-effect rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="w-5 h-5 text-accent" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">{getTasksByStatus('closed')}</div>
+              <div className="text-sm text-muted-foreground">Completed</div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Search and Filter Section */}
-      <div className="p-6 space-y-4 bg-white border-b border-border">
+      <div className="p-6 space-y-4 bg-card border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
             placeholder="Search tasks or assignees..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11 h-12 text-base border-2 focus:border-primary bg-white text-foreground placeholder:text-gray-400"
+            className="pl-11 h-12 text-base border-2 focus:border-primary bg-background text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
@@ -196,7 +188,7 @@ const Index = () => {
               className={`whitespace-nowrap ${
                 selectedFilter === filter 
                   ? 'bg-primary text-primary-foreground shadow-lg' 
-                  : 'bg-white hover:bg-gray-50 border-2 text-foreground'
+                  : 'bg-background hover:bg-card border-2 text-foreground'
               }`}
             >
               {filter === 'all' && 'All Tasks'}
@@ -210,9 +202,9 @@ const Index = () => {
       </div>
 
       {/* Tasks List */}
-      <div className="px-6 py-4 pb-20">
+      <div className="bg-background">
         {getFilteredTasks().length > 0 ? (
-          <div className="space-y-4">
+          <div className="border border-border/50 mx-4 mt-4 rounded-lg overflow-hidden">
             {getFilteredTasks().map((task) => (
               <TaskCard
                 key={task.id}
@@ -223,8 +215,8 @@ const Index = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-10 h-10 text-gray-400" />
+            <div className="bg-card rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-10 h-10 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">No tasks found</h3>
             <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
