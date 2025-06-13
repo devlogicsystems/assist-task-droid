@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/core';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.479a32dccf914f14827fc1286d2cd06a',
+  appId: 'com.taskflow.app',
   appName: 'TaskFlow - Task Management',
   webDir: 'dist',
   server: {
