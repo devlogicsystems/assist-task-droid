@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { addDays, addMonths, addYears, set, isBefore, format } from 'date-fns';
 import { Task, TaskStatus, TaskRecurrence } from '@/types/task';
@@ -230,8 +231,14 @@ export const useTaskManager = () => {
   }, [tasks, searchQuery, selectedDateFilter, statusFilter]);
 
   const handleCreateTask = (newTaskData: TaskFormData) => {
-    const recurrence = newTaskData.recurrence
-      ? { ...newTaskData.recurrence, interval: 1 }
+    const recurrence: TaskRecurrence | undefined = newTaskData.recurrence
+      ? {
+          type: newTaskData.recurrence.type,
+          weekDay: newTaskData.recurrence.weekDay,
+          monthDay: newTaskData.recurrence.monthDay,
+          monthDate: newTaskData.recurrence.monthDate,
+          interval: 1,
+        }
       : undefined;
 
     const task: Task = {
