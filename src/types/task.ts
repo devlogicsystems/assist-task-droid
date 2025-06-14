@@ -4,11 +4,11 @@ export type TaskStatus = 'assigned' | 'in-progress' | 'closed';
 export interface Task {
   id: string;
   subject: string;
-  details: string;
+  details?: string;
   assignee: string;
   dueDate: string; // YYYY-MM-DD format
   dueTime?: string; // HH:MM format
-  reminderTime: string; // HH:MM format
+  reminderTime?: string; // HH:MM format
   status: TaskStatus;
   labels: string[];
   isFullDay: boolean;
