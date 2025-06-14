@@ -72,7 +72,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
         setShowMoreOptions(false);
       }
     }
-  }, [isOpen, isEditing, taskToedit]);
+  }, [isOpen, isEditing, taskToEdit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
