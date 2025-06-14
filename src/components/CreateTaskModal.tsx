@@ -16,6 +16,7 @@ import { DueDateFields } from './task-form/DueDateFields';
 import { ReminderTimeField } from './task-form/ReminderTimeField';
 import { LabelsField } from './task-form/LabelsField';
 import { UrlField } from './task-form/UrlField';
+import { RecurrenceField } from './task-form/RecurrenceField';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       isFullDay: false,
       labels: [],
       url: '',
+      recurrence: undefined,
     },
   });
 
@@ -56,8 +58,9 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
           isFullDay: taskToEdit.isFullDay,
           labels: taskToEdit.labels || [],
           url: taskToEdit.url || '',
+          recurrence: taskToEdit.recurrence as TaskFormData['recurrence'],
         });
-        if(taskToEdit.url) {
+        if(taskToEdit.url || taskToEdit.recurrence) {
           setShowMoreOptions(true);
         }
       } else {
@@ -111,6 +114,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
             {showMoreOptions && (
               <div className="space-y-4 border-t pt-4">
                 <UrlField />
+                <RecurrenceField />
               </div>
             )}
 

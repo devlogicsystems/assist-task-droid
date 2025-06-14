@@ -15,6 +15,7 @@ export interface Task {
   url?: string;
   attachments?: TaskAttachment[];
   recurrence?: TaskRecurrence;
+  recurrenceTemplateId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

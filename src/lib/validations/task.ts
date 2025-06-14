@@ -11,6 +11,15 @@ export const taskFormSchema = z.object({
   isFullDay: z.boolean(),
   labels: z.array(z.string()),
   url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+  recurrence: z.object({
+    type: z.enum(['weekly', 'monthly', 'yearly']),
+    weekDay: z.number().optional(),
+    monthDay: z.number().optional(),
+    monthDate: z.object({
+      month: z.number(),
+      day: z.number(),
+    }).optional(),
+  }).optional(),
 });
 
 export type TaskFormData = z.infer<typeof taskFormSchema>;
