@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -142,7 +141,7 @@ const Index = () => {
         <DashboardStats
           assignedCount={getTasksByStatus('assigned')}
           inProgressCount={getTasksByStatus('in-progress')}
-          completedCount={getTasksByS_tatus('closed')}
+          completedCount={getTasksByStatus('closed')}
           onFilterChange={handleFilterChange}
           onViewCompleted={handleViewCompleted}
         />
