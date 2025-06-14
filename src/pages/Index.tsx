@@ -8,6 +8,8 @@ import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
+import { VoiceCommandModal } from '@/components/VoiceCommandModal';
+import { parseVoiceCommand } from '@/lib/voiceParser';
 import DashboardStats from '@/components/DashboardStats';
 import OverdueAssigneeChart from '@/components/OverdueAssigneeChart';
 import OverdueTrendChart from '@/components/OverdueTrendChart';
@@ -34,7 +36,7 @@ const Index = () => {
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [startVoiceOnModalOpen, setStartVoiceOnModalOpen] = useState(false);
+  const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
@@ -67,13 +69,28 @@ const Index = () => {
   const handleModalClose = () => {
     setIsCreateModalOpen(false);
     setTaskToEdit(null);
-    setStartVoiceOnModalOpen(false);
   };
   
   const handleVoiceTaskCreation = () => {
-    setTaskToEdit(null);
-    setStartVoiceOnModalOpen(true);
-    setIsCreateModalOpen(true);
+    setIsVoiceCommandModalOpen(true);
+  };
+
+  const handleVoiceCommandSubmit = (transcript: string) => {
+    const parsedData = parseVoiceCommand(transcript);
+    const taskData: TaskFormData = {
+        subject: parsedData.subject || transcript,
+        details: '',
+        assignee: parsedData.assignee || '',
+        dueDate: parsedData.dueDate || '',
+        dueTime: parsedData.dueTime || '',
+        isFullDay: !parsedData.dueTime,
+        reminderTime: '',
+        labels: [],
+        url: '',
+        recurrence: undefined,
+    };
+    handleCreateTask(taskData);
+    setIsVoiceCommandModalOpen(false);
   };
 
   return (
@@ -134,8 +151,12 @@ const Index = () => {
         onClose={handleModalClose}
         onSubmit={handleTaskFormSubmit}
         taskToEdit={taskToEdit}
-        startWithVoice={startVoiceOnModalOpen}
-        onVoiceStartHandled={() => setStartVoiceOnModalOpen(false)}
+      />
+
+      <VoiceCommandModal
+        isOpen={isVoiceCommandModalOpen}
+        onClose={() => setIsVoiceCommandModalOpen(false)}
+        onSubmit={handleVoiceCommandSubmit}
       />
     </div>
   );

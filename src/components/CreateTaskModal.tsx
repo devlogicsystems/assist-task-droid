@@ -22,8 +22,6 @@ interface CreateTaskModalProps {
   onClose: () => void;
   onSubmit: (task: TaskFormData) => void;
   taskToEdit?: Task | null;
-  startWithVoice?: boolean;
-  onVoiceStartHandled?: () => void;
 }
 
 const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ 
@@ -31,8 +29,6 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   onClose, 
   onSubmit, 
   taskToEdit,
-  startWithVoice = false,
-  onVoiceStartHandled
 }) => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const isEditing = !!taskToEdit;
@@ -54,16 +50,6 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   });
 
   const { isListening, handleVoiceInput } = useVoiceRecognition({ form });
-
-  useEffect(() => {
-    if (isOpen && startWithVoice) {
-      handleVoiceInput();
-      if (onVoiceStartHandled) {
-        onVoiceStartHandled();
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, startWithVoice]);
 
   useEffect(() => {
     if (isOpen) {
