@@ -5,68 +5,73 @@
 
 @layer base {
   :root {
-    --background: 241 227 211;
-    --foreground: 0 0 0;
+    /* Corporate Colors - Light Theme */
+    --background: 36 45% 88%; /* #F1E3D3 */
+    --foreground: 0 0% 0%;    /* #000000 */
 
-    --card: 48, 16%, 75%;
-    --card-foreground: 0 0 0;
+    --card: 48 16% 75%;        /* #CCC7B9 */
+    --card-foreground: 0 0% 0%; /* #000000 */
 
-    --dashboardcard: 32, 52%, 88%;
-    --dashboardcard-foreground: 0 0 0;
+    --dashboardcard: 36 45% 92%; /* Lighter version of #F1E3D3 for glass effect */
+    --dashboardcard-foreground: 0 0% 0%; /* #000000 */
 
-    --popover: 204 199 185;
-    --popover-foreground: 0 0 0;
+    --popover: 48 16% 80%;     /* Slightly lighter than card, e.g., #DAD5C7 */
+    --popover-foreground: 0 0% 0%; /* #000000 */
 
-    --primary: 343, 81%, 22%;
-    --primary-foreground: 255 255 255;
+    --primary: 343 81% 22%;    /* #690B22 */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --secondary: 13, 67%, 62%;
-    --secondary-foreground: 255 255 255;
+    --secondary: 13 67% 62%;   /* #E07A5F */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 204 199 185;
-    --muted-foreground: 105 11 34;
+    --muted: 48 16% 85%;       /* Even lighter shade of card, e.g., #E0DBCF */
+    --muted-foreground: 343 81% 30%; /* Darker primary for muted text */
 
-    --accent: 27 77 62;
-    --accent-foreground: 255 255 255;
+    --accent: 158 46% 20%;     /* #1B4D3E */
+    --accent-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --destructive: 239 68 68;
-    --destructive-foreground: 255 255 255;
+    --destructive: 0 84% 60%; /* Standard destructive red */
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --border: 158 46% 20%;
-    --input: 204 199 185;
-    --ring: 105 11 34;
+    --border: 158 46% 30%;     /* Accent, slightly lighter, or related to primary */
+    --input: 48 16% 80%;       /* Similar to muted or card */
+    --ring: 343 81% 22%;       /* Primary color for rings */
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 15 23 42;
-    --foreground: 248 250 252;
+    /* Corporate Colors - Dark Theme (Interpretation) */
+    --background: 240 10% 4%; /* Very dark, almost black */
+    --foreground: 0 0% 98%;   /* Off-white */
 
-    --card: 30 41 59;
-    --card-foreground: 248 250 252;
+    --card: 240 6% 10%;       /* Dark grey */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 15 23 42;
-    --popover-foreground: 248 250 252;
+    --dashboardcard: 240 6% 12%; /* Slightly lighter dark grey for glass effect */
+    --dashboardcard-foreground: 0 0% 98%;
 
-    --primary: 105 11 34;
-    --primary-foreground: 255 255 255;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
 
-    --secondary: 224 122 95;
-    --secondary-foreground: 255 255 255;
+    --primary: 343 70% 50%;   /* Brighter corporate primary for dark mode */
+    --primary-foreground: 0 0% 100%;
 
-    --muted: 30 41 59;
-    --muted-foreground: 148 163 184;
+    --secondary: 13 60% 70%;  /* Brighter corporate secondary */
+    --secondary-foreground: 0 0% 0%; /* Black text on this secondary */
 
-    --accent: 27 77 62;
-    --accent-foreground: 255 255 255;
+    --muted: 240 5% 15%;
+    --muted-foreground: 0 0% 60%;
 
-    --destructive: 239 68 68;
-    --destructive-foreground: 255 255 255;
+    --accent: 158 40% 40%;    /* Brighter corporate accent */
+    --accent-foreground: 0 0% 100%;
 
-    --border: 51 65 85;
-    --input: 51 65 85;
-    --ring: 105 11 34;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 4% 20%;
+    --input: 240 5% 15%;
+    --ring: 343 70% 50%;
   }
 }
 
@@ -87,26 +92,26 @@
   }
   
   .list-item-expanded {
-    @apply bg-card/90;
+    @apply bg-card/90; /* Or a slightly different shade like bg-muted */
   }
   
   .status-assigned {
-    @apply bg-blue-100 text-blue-800 border-blue-200;
+    @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700;
   }
   
   .status-in-progress {
-    @apply bg-orange-100 text-orange-800 border-orange-200;
+    @apply bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700;
   }
   
   .status-closed {
-    @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+    @apply bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700;
   }
 
   .gradient-header {
-    @apply bg-primary;
+    @apply bg-primary; /* Uses the CSS variable --primary */
   }
 
   .glass-effect {
-    @apply bg-dashboardcard backdrop-blur-sm border border-secondary/20;
+    @apply bg-dashboardcard backdrop-blur-sm border border-secondary/20; /* Uses --dashboardcard */
   }
 }
