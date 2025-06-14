@@ -19,6 +19,12 @@ const yearlyRecurrenceSchema = z.object({
   }),
 });
 
+const recurrenceUnionSchema = z.discriminatedUnion('type', [
+  weeklyRecurrenceSchema,
+  monthlyRecurrenceSchema,
+  yearlyRecurrenceSchema,
+]);
+
 export const taskFormSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
   details: z.string().optional(),
@@ -29,11 +35,8 @@ export const taskFormSchema = z.object({
   isFullDay: z.boolean(),
   labels: z.array(z.string()),
   url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
-  recurrence: z.discriminatedUnion('type', [
-    weeklyRecurrenceSchema,
-    monthlyRecurrenceSchema,
-    yearlyRecurrenceSchema,
-  ]).optional(),
+  recurrence: recurrenceUnionSchema.optional(),
 });
 
 export type TaskFormData = z.infer<typeof taskFormSchema>;
+export type TaskRecurrence = z.infer<typeof recurrenceUnionSchema> & { interval: number };

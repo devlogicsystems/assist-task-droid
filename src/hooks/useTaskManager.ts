@@ -230,9 +230,17 @@ export const useTaskManager = () => {
   }, [tasks, searchQuery, selectedDateFilter, statusFilter]);
 
   const handleCreateTask = (newTaskData: TaskFormData) => {
-    const recurrence: TaskRecurrence | undefined = newTaskData.recurrence
-      ? { ...newTaskData.recurrence, interval: 1 }
-      : undefined;
+    let recurrence: TaskRecurrence | undefined = undefined;
+    if (newTaskData.recurrence) {
+      const r = newTaskData.recurrence;
+      if (r.type === 'weekly') {
+        recurrence = { type: 'weekly', weekDay: r.weekDay, interval: 1 };
+      } else if (r.type === 'monthly') {
+        recurrence = { type: 'monthly', monthDay: r.monthDay, interval: 1 };
+      } else if (r.type === 'yearly') {
+        recurrence = { type: 'yearly', monthDate: r.monthDate, interval: 1 };
+      }
+    }
 
     const task: Task = {
       id: Date.now().toString(),
