@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Mic } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { parseVoiceCommand } from '@/lib/voiceParser';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +28,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
   const [currentLabel, setCurrentLabel] = useState('');
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const { toast } = useToast();
 
   const isEditing = !!taskToEdit;
 
@@ -102,22 +106,63 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
   };
 
   const handleVoiceInput = () => {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new (window as any).webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => setIsListening(true);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        form.setValue('subject', transcript, { shouldValidate: true });
-      };
-      recognition.onend = () => setIsListening(false);
-      recognition.start();
-    } else {
-      alert('Speech recognition is not supported in this browser.');
+    if (!('webkitSpeechRecognition' in window)) {
+      toast({
+        title: "Unsupported Browser",
+        description: "Speech recognition is not supported in this browser.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const recognition = new (window as any).webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      const parsedData = parseVoiceCommand(transcript);
+
+      console.log('Transcript:', transcript);
+      console.log('Parsed Data:', parsedData);
+
+      if (parsedData.subject) {
+        form.setValue('subject', parsedData.subject, { shouldValidate: true });
+      } else {
+        form.setValue('subject', transcript, { shouldValidate: true });
+      }
+
+      if (parsedData.assignee) {
+        form.setValue('assignee', parsedData.assignee, { shouldValidate: true });
+      }
+      if (parsedData.dueDate) {
+        form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
+      }
+      if (parsedData.dueTime) {
+        form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
+        form.setValue('isFullDay', false);
+      }
+      
+      toast({
+        title: "Voice Input Processed",
+        description: "Task details have been populated from your voice command.",
+      });
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      toast({
+        title: "Voice Input Error",
+        description: `An error occurred: ${event.error}`,
+        variant: "destructive",
+      });
+    };
+
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
   };
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
