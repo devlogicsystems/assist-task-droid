@@ -2,25 +2,15 @@
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/hooks/useTheme';
 
 const DarkModeToggle = () => {
-  const [isDark, setIsDark] = React.useState(false);
+  const { theme, setTheme } = useTheme();
 
-  React.useEffect(() => {
-    // Check if dark mode is already enabled
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    setIsDark(isDarkMode);
-  }, []);
+  const isDarkMode = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const toggleDarkMode = () => {
-    const newDarkMode = !isDark;
-    setIsDark(newDarkMode);
-    
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    setTheme(isDarkMode ? 'light' : 'dark');
   };
 
   return (
@@ -30,7 +20,7 @@ const DarkModeToggle = () => {
       size="sm"
       className="text-white hover:bg-white/20 border border-white/30"
     >
-      {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </Button>
   );
 };

@@ -1,17 +1,18 @@
-
 import React, { useState } from 'react';
-import { Calendar, Clock, User, CheckCircle, PlayCircle, FileText, ChevronDown, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle, PlayCircle, FileText, ChevronDown, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Task, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TaskCardProps {
   task: Task;
   onUpdate: (task: Task) => void;
+  onEdit: (task: Task) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getStatusColor = (status: TaskStatus) => {
@@ -83,16 +84,29 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
     return dueDate < today;
   };
 
+  const isEditable = () => {
+    if (task.status !== 'closed') {
+      return true;
+    }
+    // A task is editable for 24 hours after completion.
+    if (!task.updatedAt) return false;
+    const completedAt = new Date(task.updatedAt);
+    const now = new Date();
+    const hoursSinceCompletion = (now.getTime() - completedAt.getTime()) / (1000 * 60 * 60);
+    return hoursSinceCompletion <= 24;
+  };
+
+  const editable = isEditable();
+
   return (
-    <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue() ? 'border-l-4 border-l-destructive' : ''}`}>
+    <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue() && task.status !== 'closed' ? 'border-l-4 border-l-destructive' : ''}`}>
       {/* Main List Item Row */}
       <div 
-        className="flex items-center justify-between p-4 cursor-pointer"
-        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between p-4"
       >
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           {/* Expand/Collapse Icon */}
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10">
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10" onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? (
               <ChevronDown className="w-4 h-4" />
             ) : (
@@ -101,9 +115,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
           </Button>
 
           {/* Task Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" onClick={() => setIsExpanded(!isExpanded)} style={{cursor: 'pointer'}}>
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-primary text-sm truncate pr-2">{task.subject}</h3>
+              <h3 className="font-semibold text-primary text-sm truncate pr-2 task-subject">{task.subject}</h3>
               <Badge className={`${getStatusColor(task.status)} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
                 {getStatusIcon(task.status)}
                 {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -125,21 +139,44 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate }) => {
           </div>
         </div>
 
-        {/* Action Button */}
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleStatusChange();
-          }}
-          size="sm"
-          variant={task.status === 'closed' ? 'secondary' : 'default'}
-          disabled={task.status === 'closed'}
-          className="ml-2 text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground shrink-0"
-        >
-          {task.status === 'assigned' && 'Start'}
-          {task.status === 'in-progress' && 'Complete'}
-          {task.status === 'closed' && 'Done'}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 ml-2 shrink-0">
+           <Tooltip>
+            <TooltipTrigger asChild>
+              <div tabIndex={0}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-accent hover:bg-accent/10"
+                  onClick={() => onEdit(task)}
+                  disabled={!editable}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!editable && (
+              <TooltipContent>
+                <p>Completed tasks can only be edited up to 24 hours after completion.</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStatusChange();
+            }}
+            size="sm"
+            variant={task.status === 'closed' ? 'secondary' : 'default'}
+            className="text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+            disabled={task.status === 'closed'}
+          >
+            {task.status === 'assigned' && 'Start'}
+            {task.status === 'in-progress' && 'Complete'}
+            {task.status === 'closed' && 'Done'}
+          </Button>
+        </div>
       </div>
 
       {/* Expanded Content */}

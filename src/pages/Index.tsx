@@ -1,23 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Plus, Search, Filter, User, Clock, CheckCircle, BarChart3, Menu as MenuIcon, Download, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { BarChart3, Plus, CheckCircle, Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import TaskCard from '@/components/TaskCard';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import FilterPanel from '@/components/FilterPanel';
-import DarkModeToggle from '@/components/DarkModeToggle';
+import Header from '@/components/Header';
 import { Task, TaskStatus } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
 
 const sampleTasks: Task[] = [
   {
@@ -75,18 +65,20 @@ const TASKS_STORAGE_KEY = 'taskflow_tasks';
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
-    const storedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
     try {
+      const storedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
       return storedTasks ? JSON.parse(storedTasks) : sampleTasks;
     } catch (error) {
       console.error("Failed to parse tasks from localStorage:", error);
-      return sampleTasks; // Fallback to sample tasks if parsing fails
+      return sampleTasks;
     }
   });
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days'>('all');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days'>('all');
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const { toast } = useToast();
   const importFileRef = useRef<HTMLInputElement>(null);
 
@@ -94,66 +86,73 @@ const Index = () => {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter(task => task.status === status).length;
-  };
-
-  const getFilteredTasks = () => {
+  const filteredTasks = useMemo(() => {
     let filtered = tasks;
 
+    // Filter by status first
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(task => task.status === statusFilter);
+    } else {
+      // Default to not showing closed tasks unless specifically requested
+      filtered = filtered.filter(task => task.status !== 'closed');
+    }
+
     if (searchQuery) {
+      const lowercasedQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(task =>
-        task.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.assignee.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (task.details && task.details.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        task.labels.some(label => label.toLowerCase().includes(searchQuery.toLowerCase()))
+        task.subject.toLowerCase().includes(lowercasedQuery) ||
+        task.assignee.toLowerCase().includes(lowercasedQuery) ||
+        (task.details && task.details.toLowerCase().includes(lowercasedQuery)) ||
+        task.labels.some(label => label.toLowerCase().includes(lowercasedQuery))
       );
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-    
+    today.setHours(0, 0, 0, 0);
+
     const getFutureDate = (days: number) => {
       const date = new Date(today);
       date.setDate(today.getDate() + days);
       return date;
     };
-
-    // Active tasks are those not 'closed'
-    const activeTasks = filtered.filter(task => task.status !== 'closed');
-
-    switch (selectedFilter) {
-      case 'today':
-        return activeTasks.filter(task => new Date(task.dueDate).toDateString() === today.toDateString());
-      case 'tomorrow':
-        const tomorrow = getFutureDate(1);
-        return activeTasks.filter(task => new Date(task.dueDate).toDateString() === tomorrow.toDateString());
-      case 'next5days':
-        const fiveDaysFromNow = getFutureDate(4); // today + 4 days = 5 days inclusive
-        return activeTasks.filter(task => {
-          const taskDueDate = new Date(task.dueDate);
-          return taskDueDate >= today && taskDueDate <= fiveDaysFromNow;
-        });
-      case 'next30days':
-        const thirtyDaysFromNow = getFutureDate(29); // today + 29 days = 30 days inclusive
-        return activeTasks.filter(task => {
-          const taskDueDate = new Date(task.dueDate);
-          return taskDueDate >= today && taskDueDate <= thirtyDaysFromNow;
-        });
-      case 'all':
-      default:
-        return activeTasks; // Default to all non-closed tasks
+    
+    // Date filters only apply if we are not looking at completed tasks
+    if (statusFilter !== 'closed') {
+        switch (selectedDateFilter) {
+          case 'today':
+            return filtered.filter(task => new Date(task.dueDate).toDateString() === today.toDateString());
+          case 'tomorrow':
+            const tomorrow = getFutureDate(1);
+            return filtered.filter(task => new Date(task.dueDate).toDateString() === tomorrow.toDateString());
+          case 'next5days':
+            const fiveDaysFromNow = getFutureDate(4);
+            return filtered.filter(task => {
+              const taskDueDate = new Date(task.dueDate);
+              return taskDueDate >= today && taskDueDate <= fiveDaysFromNow;
+            });
+          case 'next30days':
+            const thirtyDaysFromNow = getFutureDate(29);
+            return filtered.filter(task => {
+              const taskDueDate = new Date(task.dueDate);
+              return taskDueDate >= today && taskDueDate <= thirtyDaysFromNow;
+            });
+          case 'all':
+          default:
+            return filtered;
+        }
     }
-  };
+
+    return filtered;
+  }, [tasks, searchQuery, selectedDateFilter, statusFilter]);
 
   const handleCreateTask = (newTask: Omit<Task, 'id'>) => {
     const task: Task = {
       ...newTask,
-      id: Date.now().toString(), // Simple ID generation
+      id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setTasks(prev => [task, ...prev]); // Add new task to the beginning
+    setTasks(prev => [task, ...prev]);
     setIsCreateModalOpen(false);
     toast({
       title: "Task Created",
@@ -162,13 +161,25 @@ const Index = () => {
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
-    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? {...updatedTask, updatedAt: new Date().toISOString()} : task)));
+    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? { ...updatedTask, updatedAt: new Date().toISOString() } : task)));
     toast({
       title: "Task Updated",
       description: `"${updatedTask.subject}" status changed to ${updatedTask.status}.`,
     });
   };
 
+  const handleEditTask = (task: Task) => {
+    // As CreateTaskModal is read-only, full edit functionality cannot be implemented yet.
+    // This will be implemented in a future step.
+    toast({
+      title: "Coming Soon!",
+      description: "You'll be able to edit tasks shortly.",
+      variant: "default"
+    });
+    // setTaskToEdit(task);
+    // setIsCreateModalOpen(true);
+  };
+  
   const handleExportTasks = () => {
     if (tasks.length === 0) {
       toast({
@@ -234,14 +245,16 @@ const Index = () => {
       importFileRef.current.value = "";
     }
   };
+  
+  const triggerImport = () => importFileRef.current?.click();
 
-  const triggerImport = () => {
-    importFileRef.current?.click();
+  const getTasksByStatus = (status: TaskStatus) => tasks.filter(task => task.status === status).length;
+  
+  const handleViewCompleted = () => {
+    setStatusFilter('closed');
+    setSelectedDateFilter('all');
   };
   
-  const allTasksCount = tasks.length;
-  const closedTasksCount = tasks.filter(task => task.status === 'closed').length;
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <input
@@ -251,96 +264,44 @@ const Index = () => {
         accept=".json"
         className="hidden"
       />
-      {/* Modern Header with Corporate Colors */}
-      <div className="bg-primary text-primary-foreground relative overflow-hidden">
-        {/* Modern Header with Corporate Colors */}
-        <div className="absolute inset-0 bg-black/10">
-          <div className="absolute inset-0 opacity-10">
-            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-              <g fill="none" fillRule="evenodd">
-                <g fill="#ffffff" fillOpacity="0.1">
-                  <circle cx="30" cy="30" r="2"/>
-                </g>
-              </g>
-            </svg>
-          </div>
-        </div>
-        
-        <div className="relative p-6 pb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Menubar className="bg-transparent border-none p-0 h-auto">
-                <MenubarMenu>
-                  <MenubarTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-                      <MenuIcon className="w-6 h-6" />
-                    </Button>
-                  </MenubarTrigger>
-                  <MenubarContent>
-                    <MenubarItem onClick={triggerImport}>
-                      <Upload className="mr-2 h-4 w-4" /> Import Tasks
-                    </MenubarItem>
-                    <MenubarItem onClick={handleExportTasks}>
-                      <Download className="mr-2 h-4 w-4" /> Export Tasks
-                    </MenubarItem>
-                    <MenubarSeparator />
-                    <MenubarItem onClick={() => setIsCreateModalOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" /> New Task
-                    </MenubarItem>
-                  </MenubarContent>
-                </MenubarMenu>
-              </Menubar>
-              <div>
-                <h1 className="text-3xl font-bold text-primary-foreground">TaskFlow</h1>
-                <p className="text-primary-foreground/80 text-sm mt-1">Organize your work efficiently</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <DarkModeToggle />
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                size="sm"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 border border-accent shadow-lg font-medium"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Task
-              </Button>
-            </div>
-          </div>
+      
+      <Header
+        onNewTask={() => setIsCreateModalOpen(true)}
+        onImport={triggerImport}
+        onExport={handleExportTasks}
+        onViewCompleted={handleViewCompleted}
+      />
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass-effect rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <User className="w-5 h-5 text-accent" />
-              </div>
-              <div className="text-2xl font-bold text-dashboardcard-foreground">{getTasksByStatus('assigned')}</div>
-              <div className="text-sm text-muted-foreground">Assigned</div>
+      <div className="relative p-6 pb-8 -mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="glass-effect rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center mb-2">
+              <User className="w-5 h-5 text-accent" />
             </div>
-            
-            <div className="glass-effect rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Clock className="w-5 h-5 text-secondary" />
-              </div>
-              <div className="text-2xl font-bold text-dashboardcard-foreground">{getTasksByStatus('in-progress')}</div>
-              <div className="text-sm text-muted-foreground">In Progress</div>
+            <div className="text-2xl font-bold text-dashboardcard-foreground">{getTasksByStatus('assigned')}</div>
+            <div className="text-sm text-muted-foreground">Assigned</div>
+          </div>
+          
+          <div className="glass-effect rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Clock className="w-5 h-5 text-secondary" />
             </div>
-            
-            <div className="glass-effect rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <CheckCircle className="w-5 h-5 text-green-500" /> {/* Using a specific green for completed */}
-              </div>
-              <div className="text-2xl font-bold text-dashboardcard-foreground">{closedTasksCount}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
+            <div className="text-2xl font-bold text-dashboardcard-foreground">{getTasksByStatus('in-progress')}</div>
+            <div className="text-sm text-muted-foreground">In Progress</div>
+          </div>
+          
+          <div className="glass-effect rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center mb-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
             </div>
+            <div className="text-2xl font-bold text-dashboardcard-foreground">{getTasksByStatus('closed')}</div>
+            <div className="text-sm text-muted-foreground">Completed</div>
           </div>
         </div>
       </div>
-
-      {/* Search and Filter Section */}
-      <div className="p-6 space-y-4 bg-card/80 border-b border-border"> {/* Adjusted bg for contrast */}
+      
+      <div className="p-6 space-y-4 bg-card/80 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
             placeholder="Search tasks, assignees, details, or labels..."
             value={searchQuery}
@@ -348,39 +309,38 @@ const Index = () => {
             className="pl-11 h-12 text-base border-2 focus:border-primary bg-background text-foreground placeholder:text-muted-foreground"
           />
         </div>
-
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {['all', 'today', 'tomorrow', 'next5days', 'next30days'].map((filter) => (
-            <Button
-              key={filter}
-              onClick={() => setSelectedFilter(filter as any)}
-              variant={selectedFilter === filter ? 'default' : 'outline'}
-              size="sm"
-              className={`whitespace-nowrap ${
-                selectedFilter === filter 
-                  ? 'bg-primary text-primary-foreground shadow-lg' 
-                  : 'bg-background hover:bg-muted border-2 text-foreground border-border/50'
-              }`}
-            >
-              {filter === 'all' && `All Active (${getFilteredTasks().length})`}
-              {filter === 'today' && 'Today'}
-              {filter === 'tomorrow' && 'Tomorrow'}
-              {filter === 'next5days' && 'Next 5 Days'}
-              {filter === 'next30days' && 'Next 30 Days'}
-            </Button>
-          ))}
+            <Button onClick={() => setStatusFilter('all')} variant={statusFilter === 'all' ? 'default' : 'outline'}>All Active</Button>
+            {['today', 'tomorrow', 'next5days', 'next30days'].map((filter) => (
+              <Button
+                key={filter}
+                onClick={() => { setStatusFilter('all'); setSelectedDateFilter(filter as any); }}
+                variant={selectedDateFilter === filter && statusFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                className={`whitespace-nowrap ${
+                  selectedDateFilter === filter && statusFilter === 'all'
+                    ? 'bg-primary text-primary-foreground shadow-lg' 
+                    : 'bg-background hover:bg-muted border-2 text-foreground border-border/50'
+                }`}
+              >
+                {filter === 'today' && 'Today'}
+                {filter === 'tomorrow' && 'Tomorrow'}
+                {filter === 'next5days' && 'Next 5 Days'}
+                {filter === 'next30days' && 'Next 30 Days'}
+              </Button>
+            ))}
         </div>
       </div>
 
-      {/* Tasks List */}
       <div className="bg-background pb-6">
-        {getFilteredTasks().length > 0 ? (
+        {filteredTasks.length > 0 ? (
           <div className="border border-border/50 mx-4 mt-4 rounded-lg overflow-hidden shadow-sm">
-            {getFilteredTasks().map((task) => (
+            {filteredTasks.map((task) => (
               <TaskCard
                 key={task.id}
                 task={task}
                 onUpdate={handleUpdateTask}
+                onEdit={handleEditTask}
               />
             ))}
           </div>
@@ -395,25 +355,14 @@ const Index = () => {
             <p className="text-muted-foreground text-sm">
               {searchQuery ? "Try a different search term or clear the search." : "Try adjusting your filter criteria or create a new task!"}
             </p>
-            {!searchQuery && selectedFilter === 'all' && tasks.filter(t => t.status !== 'closed').length === 0 && (
-              <Button onClick={() => setIsCreateModalOpen(true)} className="mt-4">
-                <Plus className="w-4 h-4 mr-2" /> Create Your First Task
-              </Button>
-            )}
           </div>
         )}
       </div>
 
-      {/* Modals */}
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateTask}
-      />
-
-      <FilterPanel
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
       />
     </div>
   );
