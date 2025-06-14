@@ -18,24 +18,32 @@ export function mapTaskFormDataToTask(
     }
   }
 
-  const { recurrence: _formRecurrence, ...restData } = data;
+  const taskData = {
+    subject: data.subject,
+    details: data.details,
+    assignee: data.assignee,
+    dueDate: data.dueDate,
+    dueTime: data.dueTime,
+    reminderTime: data.reminderTime,
+    isFullDay: data.isFullDay,
+    labels: data.labels,
+    url: data.url || undefined,
+    recurrence,
+  };
 
   if (existingTask) {
     return {
       ...existingTask,
-      ...restData,
-      recurrence,
+      ...taskData,
       updatedAt: new Date().toISOString(),
     };
   }
 
   return {
+    ...taskData,
     id: Date.now().toString(),
     status: 'assigned',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    ...restData,
-    url: data.url || undefined,
-    recurrence,
   };
 }
