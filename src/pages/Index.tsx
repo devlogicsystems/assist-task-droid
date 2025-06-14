@@ -38,6 +38,7 @@ const Index = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
@@ -49,11 +50,13 @@ const Index = () => {
   const handleViewCompleted = () => {
     setStatusFilter('closed');
     setSelectedDateFilter('all');
+    setActiveTab('tasks');
   };
 
   const handleFilterChange = (status: TaskStatus, date: 'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days') => {
     setStatusFilter(status);
     setSelectedDateFilter(date);
+    setActiveTab('tasks');
   }
   
   const handleTaskFormSubmit = (data: TaskFormData) => {
@@ -113,7 +116,7 @@ const Index = () => {
       />
 
       <div className="relative p-6 pb-8 -mt-8">
-        <Tabs defaultValue="dashboard">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex justify-center">
             <TabsList>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
