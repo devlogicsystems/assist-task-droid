@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
@@ -111,7 +112,7 @@ const Index = () => {
         onVoiceTask={handleVoiceTaskCreation}
       />
 
-      <div className="relative p-6 -mt-8">
+      <div className="relative p-6 pb-8 -mt-8">
         <Tabs defaultValue="dashboard">
           <div className="flex justify-center">
             <TabsList>
@@ -120,43 +121,39 @@ const Index = () => {
             </TabsList>
           </div>
           <TabsContent value="dashboard">
-            <div className="border-x border-b border-border rounded-b-md p-6">
-              <DashboardStats
-                assignedCount={getTasksByStatus('assigned')}
-                inProgressCount={getTasksByStatus('in-progress')}
-                completedCount={getTasksByStatus('closed')}
-                onFilterChange={handleFilterChange}
-                onViewCompleted={handleViewCompleted}
-              />
-              
-              <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <OverdueAssigneeChart tasks={tasks} />
-                </div>
-                <div>
-                  <OverdueTrendChart tasks={tasks} />
-                </div>
+            <DashboardStats
+              assignedCount={getTasksByStatus('assigned')}
+              inProgressCount={getTasksByStatus('in-progress')}
+              completedCount={getTasksByStatus('closed')}
+              onFilterChange={handleFilterChange}
+              onViewCompleted={handleViewCompleted}
+            />
+            
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <OverdueAssigneeChart tasks={tasks} />
+              </div>
+              <div>
+                <OverdueTrendChart tasks={tasks} />
               </div>
             </div>
           </TabsContent>
           <TabsContent value="tasks">
-            <div className="border-x border-b border-border rounded-b-md p-6">
-              <TaskFilters 
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                selectedDateFilter={selectedDateFilter}
-                setSelectedDateFilter={setSelectedDateFilter}
-              />
+            <TaskFilters 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              selectedDateFilter={selectedDateFilter}
+              setSelectedDateFilter={setSelectedDateFilter}
+            />
 
-              <TaskList
-                tasks={filteredTasks}
-                searchQuery={searchQuery}
-                onUpdate={handleUpdateTask}
-                onEdit={handleEditTask}
-              />
-            </div>
+            <TaskList
+              tasks={filteredTasks}
+              searchQuery={searchQuery}
+              onUpdate={handleUpdateTask}
+              onEdit={handleEditTask}
+            />
           </TabsContent>
         </Tabs>
       </div>
