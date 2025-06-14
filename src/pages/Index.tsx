@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -124,8 +123,8 @@ const Index = () => {
           recurrence = { type: 'weekly', weekDay: r.weekDay, interval: 1 };
         } else if (r.type === 'monthly') {
           recurrence = { type: 'monthly', monthDay: r.monthDay, interval: 1 };
-        } else if (r.type === 'yearly') {
-          recurrence = { type: 'yearly', monthDate: r.monthDate, interval: 1 };
+        } else if (r.type === 'yearly' && r.monthDate && r.monthDate.month != null && r.monthDate.day != null) {
+          recurrence = { type: 'yearly', monthDate: { month: r.monthDate.month, day: r.monthDate.day }, interval: 1 };
         }
       }
 
