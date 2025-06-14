@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { addDays, addMonths, addYears, set, isBefore, format } from 'date-fns';
 import { Task, TaskStatus, TaskRecurrence } from '@/types/task';
@@ -259,13 +258,7 @@ export const useTaskManager = () => {
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
-    // When updating, we need to ensure the recurrence object from form data is correctly shaped
-    const formData = updatedTask as unknown as TaskFormData;
-    const recurrence = formData.recurrence
-      ? { ...formData.recurrence, interval: 1 }
-      : undefined;
-
-    const finalTask = { ...updatedTask, recurrence: recurrence, updatedAt: new Date().toISOString() };
+    const finalTask = { ...updatedTask, updatedAt: new Date().toISOString() };
 
     setTasks(prev => prev.map(task => (task.id === finalTask.id ? finalTask : task)));
     toast({

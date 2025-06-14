@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -116,7 +117,14 @@ const Index = () => {
   
   const handleTaskFormSubmit = (data: TaskFormData) => {
     if (taskToEdit) {
-      handleUpdateTask({ ...taskToEdit, ...data });
+      const updatedTask: Task = {
+        ...taskToEdit,
+        ...data,
+        recurrence: data.recurrence
+          ? { ...data.recurrence, interval: 1 }
+          : undefined,
+      };
+      handleUpdateTask(updatedTask);
     } else {
       handleCreateTask(data);
     }
