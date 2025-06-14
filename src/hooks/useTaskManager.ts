@@ -135,11 +135,20 @@ export const useTaskManager = () => {
 
   const handleCreateTask = (newTaskData: TaskFormData) => {
     const task: Task = {
-      ...newTaskData,
       id: Date.now().toString(),
       status: 'assigned',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // Explicitly map properties to ensure type safety
+      subject: newTaskData.subject,
+      assignee: newTaskData.assignee,
+      dueDate: newTaskData.dueDate,
+      isFullDay: newTaskData.isFullDay,
+      labels: newTaskData.labels,
+      details: newTaskData.details,
+      dueTime: newTaskData.dueTime,
+      reminderTime: newTaskData.reminderTime,
+      url: newTaskData.url || undefined,
     };
     setTasks(prev => [task, ...prev]);
     toast({
