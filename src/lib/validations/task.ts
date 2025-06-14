@@ -12,3 +12,5 @@ export const taskFormSchema = z.object({
   labels: z.array(z.string()),
   url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
+
+export type TaskFormData = z.infer<typeof taskFormSchema>;

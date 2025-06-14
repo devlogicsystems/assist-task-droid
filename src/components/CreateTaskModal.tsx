@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Calendar, Clock, User, Plus, Mic, FileText } from 'lucide-react';
+import { Plus, Mic } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { taskFormSchema } from '@/lib/validations/task';
-import { Task, TaskFormData } from '@/types/task';
+import { taskFormSchema, TaskFormData } from '@/lib/validations/task';
+import { Task } from '@/types/task';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -30,7 +28,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
   const isEditing = !!taskToEdit;
 
-  const form = useForm<z.infer<typeof taskFormSchema>>({
+  const form = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
       subject: '',
@@ -69,7 +67,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     }
   }, [isOpen, isEditing, taskToEdit, form]);
 
-  const onValidSubmit = (data: z.infer<typeof taskFormSchema>) => {
+  const onValidSubmit = (data: TaskFormData) => {
     let reminderTime = data.reminderTime;
     if (!reminderTime && data.dueTime && !data.isFullDay) {
       const [hours, minutes] = data.dueTime.split(':');

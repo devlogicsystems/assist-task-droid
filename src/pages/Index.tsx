@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { Task, TaskStatus, TaskFormData } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
+import { TaskFormData } from '@/lib/validations/task';
 
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';

@@ -19,8 +19,6 @@ export interface Task {
   updatedAt?: string;
 }
 
-export type TaskFormData = Omit<Task, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'attachments' | 'recurrence'>;
-
 export interface TaskAttachment {
   id: string;
   fileName: string;
