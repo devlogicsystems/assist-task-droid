@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Plus, Mic, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,16 +13,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Task } from '@/types/task';
+import { Task, TaskFormData } from '@/types/task';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (task: Omit<Task, 'id'>) => void;
+  onSubmit: (task: TaskFormData) => void;
+  taskToEdit?: Task | null;
 }
 
-const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
+const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit, taskToEdit }) => {
+  const [formData, setFormData] = useState<TaskFormData>({
     subject: '',
     details: '',
     assignee: '',
@@ -30,17 +31,52 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     dueTime: '',
     reminderTime: '',
     isFullDay: false,
-    labels: [] as string[],
+    labels: [],
     url: '',
   });
   const [currentLabel, setCurrentLabel] = useState('');
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
+  const isEditing = !!taskToEdit;
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditing && taskToEdit) {
+        setFormData({
+          subject: taskToEdit.subject,
+          details: taskToEdit.details || '',
+          assignee: taskToEdit.assignee,
+          dueDate: taskToEdit.dueDate,
+          dueTime: taskToEdit.dueTime || '',
+          reminderTime: taskToEdit.reminderTime || '',
+          isFullDay: taskToEdit.isFullDay,
+          labels: taskToEdit.labels || [],
+          url: taskToEdit.url || '',
+        });
+        if(taskToEdit.url) {
+          setShowMoreOptions(true);
+        }
+      } else {
+        setFormData({
+          subject: '',
+          details: '',
+          assignee: '',
+          dueDate: '',
+          dueTime: '',
+          reminderTime: '',
+          isFullDay: false,
+          labels: [],
+          url: '',
+        });
+        setShowMoreOptions(false);
+      }
+    }
+  }, [isOpen, isEditing, taskToedit]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Set default reminder time if not provided
     let reminderTime = formData.reminderTime;
     if (!reminderTime && formData.dueTime && !formData.isFullDay) {
       const [hours, minutes] = formData.dueTime.split(':');
@@ -48,18 +84,10 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       dueDateTime.setHours(parseInt(hours), parseInt(minutes) - 10);
       reminderTime = dueDateTime.toTimeString().slice(0, 5);
     } else if (!reminderTime) {
-      reminderTime = '09:00'; // Default for full day tasks
+      reminderTime = '09:00';
     }
 
-    const task: Omit<Task, 'id'> = {
-      ...formData,
-      reminderTime,
-      status: 'assigned',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    onSubmit(task);
+    onSubmit({ ...formData, reminderTime });
     handleReset();
   };
 
@@ -135,7 +163,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Task' : 'Create New Task'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -297,7 +325,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
               Cancel
             </Button>
             <Button type="submit" className="flex-1">
-              Create Task
+              {isEditing ? 'Save Changes' : 'Create Task'}
             </Button>
           </div>
         </form>

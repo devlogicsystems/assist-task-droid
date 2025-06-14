@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { Task, TaskStatus } from '@/types/task';
+import { Task, TaskStatus, TaskFormData } from '@/types/task';
 
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
@@ -28,15 +28,13 @@ const Index = () => {
   } = useTaskManager();
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const { toast } = useToast();
   const importFileRef = useRef<HTMLInputElement>(null);
 
   const handleEditTask = (task: Task) => {
-    toast({
-      title: "Coming Soon!",
-      description: "You'll be able to edit tasks shortly.",
-      variant: "default"
-    });
+    setTaskToEdit(task);
+    setIsCreateModalOpen(true);
   };
   
   const handleExportTasks = () => {
@@ -115,10 +113,24 @@ const Index = () => {
     setSelectedDateFilter(date);
   }
   
-  const handleNewTaskSubmit = (newTask: Omit<Task, 'id'>) => {
-    handleCreateTask(newTask);
+  const handleTaskFormSubmit = (data: TaskFormData) => {
+    if (taskToEdit) {
+      handleUpdateTask({ ...taskToEdit, ...data });
+    } else {
+      const newTask: Omit<Task, 'id'> = {
+        ...data,
+        status: 'assigned',
+      };
+      handleCreateTask(newTask);
+    }
     setIsCreateModalOpen(false);
-  }
+    setTaskToEdit(null);
+  };
+
+  const handleModalClose = () => {
+    setIsCreateModalOpen(false);
+    setTaskToEdit(null);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -131,7 +143,7 @@ const Index = () => {
       />
       
       <Header
-        onNewTask={() => setIsCreateModalOpen(true)}
+        onNewTask={() => { setTaskToEdit(null); setIsCreateModalOpen(true); }}
         onImport={triggerImport}
         onExport={handleExportTasks}
         onViewCompleted={handleViewCompleted}
@@ -174,8 +186,9 @@ const Index = () => {
 
       <CreateTaskModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleNewTaskSubmit}
+        onClose={handleModalClose}
+        onSubmit={handleTaskFormSubmit}
+        taskToEdit={taskToEdit}
       />
     </div>
   );

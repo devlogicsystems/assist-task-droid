@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { Task, TaskStatus } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
@@ -151,7 +150,7 @@ export const useTaskManager = () => {
     setTasks(prev => prev.map(task => (task.id === updatedTask.id ? { ...updatedTask, updatedAt: new Date().toISOString() } : task)));
     toast({
       title: "Task Updated",
-      description: `"${updatedTask.subject}" status changed to ${updatedTask.status}.`,
+      description: `"${updatedTask.subject}" has been updated.`,
     });
   };
 
@@ -172,4 +171,3 @@ export const useTaskManager = () => {
     getTasksByStatus,
   };
 };
-
