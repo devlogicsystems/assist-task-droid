@@ -6,6 +6,7 @@ import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import { VoiceCommandModal } from '@/components/VoiceCommandModal';
@@ -112,39 +113,50 @@ const Index = () => {
       />
 
       <div className="relative p-6 pb-8 -mt-8">
-        <DashboardStats
-          assignedCount={getTasksByStatus('assigned')}
-          inProgressCount={getTasksByStatus('in-progress')}
-          completedCount={getTasksByStatus('closed')}
-          onFilterChange={handleFilterChange}
-          onViewCompleted={handleViewCompleted}
-        />
-        
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <OverdueAssigneeChart tasks={tasks} />
+        <Tabs defaultValue="dashboard">
+          <div className="flex justify-center">
+            <TabsList>
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            </TabsList>
           </div>
-          <div>
-            <OverdueTrendChart tasks={tasks} />
-          </div>
-        </div>
-      </div>
-      
-      <TaskFilters 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        selectedDateFilter={selectedDateFilter}
-        setSelectedDateFilter={setSelectedDateFilter}
-      />
+          <TabsContent value="dashboard">
+            <DashboardStats
+              assignedCount={getTasksByStatus('assigned')}
+              inProgressCount={getTasksByStatus('in-progress')}
+              completedCount={getTasksByStatus('closed')}
+              onFilterChange={handleFilterChange}
+              onViewCompleted={handleViewCompleted}
+            />
+            
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <OverdueAssigneeChart tasks={tasks} />
+              </div>
+              <div>
+                <OverdueTrendChart tasks={tasks} />
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="tasks">
+            <TaskFilters 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              selectedDateFilter={selectedDateFilter}
+              setSelectedDateFilter={setSelectedDateFilter}
+            />
 
-      <TaskList
-        tasks={filteredTasks}
-        searchQuery={searchQuery}
-        onUpdate={handleUpdateTask}
-        onEdit={handleEditTask}
-      />
+            <TaskList
+              tasks={filteredTasks}
+              searchQuery={searchQuery}
+              onUpdate={handleUpdateTask}
+              onEdit={handleEditTask}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <CreateTaskModal
         isOpen={isCreateModalOpen}
