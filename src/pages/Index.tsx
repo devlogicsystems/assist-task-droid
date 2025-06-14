@@ -1,8 +1,7 @@
-
 import React, { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { Task, TaskStatus, TaskRecurrence } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 
 import Header from '@/components/Header';
@@ -117,19 +116,12 @@ const Index = () => {
   
   const handleTaskFormSubmit = (data: TaskFormData) => {
     if (taskToEdit) {
-      const recurrence: TaskRecurrence | undefined = data.recurrence
-        ? {
-            type: data.recurrence.type,
-            weekDay: data.recurrence.weekDay,
-            monthDay: data.recurrence.monthDay,
-            monthDate: data.recurrence.monthDate,
-            interval: 1,
-          }
-        : undefined;
       const updatedTask: Task = {
         ...taskToEdit,
         ...data,
-        recurrence: recurrence,
+        recurrence: data.recurrence
+          ? { ...data.recurrence, interval: 1 }
+          : undefined,
       };
       handleUpdateTask(updatedTask);
     } else {

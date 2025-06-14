@@ -1,6 +1,24 @@
 
 import * as z from 'zod';
 
+const weeklyRecurrenceSchema = z.object({
+  type: z.literal('weekly'),
+  weekDay: z.number(),
+});
+
+const monthlyRecurrenceSchema = z.object({
+  type: z.literal('monthly'),
+  monthDay: z.number(),
+});
+
+const yearlyRecurrenceSchema = z.object({
+  type: z.literal('yearly'),
+  monthDate: z.object({
+    month: z.number(),
+    day: z.number(),
+  }),
+});
+
 export const taskFormSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
   details: z.string().optional(),
@@ -11,15 +29,11 @@ export const taskFormSchema = z.object({
   isFullDay: z.boolean(),
   labels: z.array(z.string()),
   url: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
-  recurrence: z.object({
-    type: z.enum(['weekly', 'monthly', 'yearly']),
-    weekDay: z.number().optional(),
-    monthDay: z.number().optional(),
-    monthDate: z.object({
-      month: z.number(),
-      day: z.number(),
-    }).optional(),
-  }).optional(),
+  recurrence: z.discriminatedUnion('type', [
+    weeklyRecurrenceSchema,
+    monthlyRecurrenceSchema,
+    yearlyRecurrenceSchema,
+  ]).optional(),
 });
 
 export type TaskFormData = z.infer<typeof taskFormSchema>;
