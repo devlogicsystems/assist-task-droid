@@ -29,14 +29,27 @@ export interface TaskAttachment {
   uploadedAt: string;
 }
 
-export interface TaskRecurrence {
-  type: 'weekly' | 'monthly' | 'yearly';
+interface RecurrenceBase {
   interval: number;
-  weekDay?: number; // 0-6 (Sunday-Saturday)
-  monthDay?: number; // 1-31
-  monthDate?: { month: number; day: number }; // For yearly
   endDate?: string;
 }
+
+export interface WeeklyRecurrence extends RecurrenceBase {
+  type: 'weekly';
+  weekDay: number; // 0-6 (Sunday-Saturday)
+}
+
+export interface MonthlyRecurrence extends RecurrenceBase {
+  type: 'monthly';
+  monthDay: number; // 1-31
+}
+
+export interface YearlyRecurrence extends RecurrenceBase {
+  type: 'yearly';
+  monthDate: { month: number; day: number }; // For yearly
+}
+
+export type TaskRecurrence = WeeklyRecurrence | MonthlyRecurrence | YearlyRecurrence;
 
 export interface TaskLabel {
   id: string;

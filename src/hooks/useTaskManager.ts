@@ -90,7 +90,7 @@ export const useTaskManager = () => {
           return candidate;
         case 'monthly': {
           candidate = addDays(candidate, 1);
-          const monthDay = recurrence.monthDay!;
+          const monthDay = recurrence.monthDay;
           if (candidate.getDate() > monthDay) {
             candidate = addMonths(candidate, 1);
           }
@@ -104,8 +104,8 @@ export const useTaskManager = () => {
         }
         case 'yearly': {
           let year = after.getFullYear();
-          const month = recurrence.monthDate!.month;
-          const day = recurrence.monthDate!.day;
+          const month = recurrence.monthDate.month;
+          const day = recurrence.monthDate.day;
           candidate = new Date(year, month, day);
           if (isBefore(candidate, after) || candidate.getTime() === after.getTime()) {
             candidate = new Date(year + 1, month, day);

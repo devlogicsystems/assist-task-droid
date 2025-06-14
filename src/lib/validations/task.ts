@@ -39,4 +39,3 @@ export const taskFormSchema = z.object({
 });
 
 export type TaskFormData = z.infer<typeof taskFormSchema>;
-export type TaskRecurrence = z.infer<typeof recurrenceUnionSchema> & { interval: number };

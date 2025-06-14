@@ -48,18 +48,25 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
   useEffect(() => {
     if (isOpen) {
       if (isEditing && taskToEdit) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { recurrence: taskRecurrence, ...restTask } = taskToEdit;
+        let formRecurrence: TaskFormData['recurrence'] = undefined;
+        if (taskRecurrence) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { interval, endDate, ...rest } = taskRecurrence;
+          formRecurrence = rest;
+        }
+
         form.reset({
-          subject: taskToEdit.subject,
+          ...restTask,
           details: taskToEdit.details || '',
-          assignee: taskToEdit.assignee,
-          dueDate: taskToEdit.dueDate,
           dueTime: taskToEdit.dueTime || '',
           reminderTime: taskToEdit.reminderTime || '',
-          isFullDay: taskToEdit.isFullDay,
           labels: taskToEdit.labels || [],
           url: taskToEdit.url || '',
-          recurrence: taskToEdit.recurrence as TaskFormData['recurrence'],
+          recurrence: formRecurrence,
         });
+
         if(taskToEdit.url || taskToEdit.recurrence) {
           setShowMoreOptions(true);
         }
