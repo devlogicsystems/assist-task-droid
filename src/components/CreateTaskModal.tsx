@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
@@ -23,9 +22,18 @@ interface CreateTaskModalProps {
   onClose: () => void;
   onSubmit: (task: TaskFormData) => void;
   taskToEdit?: Task | null;
+  startWithVoice?: boolean;
+  onVoiceStartHandled?: () => void;
 }
 
-const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit, taskToEdit }) => {
+const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  taskToEdit,
+  startWithVoice = false,
+  onVoiceStartHandled
+}) => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const isEditing = !!taskToEdit;
 
@@ -44,6 +52,18 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
       recurrence: undefined,
     },
   });
+
+  const { isListening, handleVoiceInput } = useVoiceRecognition({ form });
+
+  useEffect(() => {
+    if (isOpen && startWithVoice) {
+      handleVoiceInput();
+      if (onVoiceStartHandled) {
+        onVoiceStartHandled();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, startWithVoice]);
 
   useEffect(() => {
     if (isOpen) {
@@ -107,7 +127,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onValidSubmit)} className="space-y-4">
-            <SubjectField />
+            <SubjectField isListening={isListening} handleVoiceInput={handleVoiceInput} />
             <DetailsField />
             <AssigneeField />
             <DueDateFields />

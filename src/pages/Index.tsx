@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { useToast } from "@/hooks/use-toast";
+
+import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { Task, TaskStatus, TaskRecurrence } from '@/types/task';
+import { useTaskIO } from '@/hooks/useTaskIO';
+import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
+import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
@@ -28,82 +30,19 @@ const Index = () => {
     getTasksByStatus,
   } = useTaskManager();
   
+  const { importFileRef, triggerImport, handleExportTasks, handleImportFileSelect } = useTaskIO(tasks, setTasks);
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const { toast } = useToast();
-  const importFileRef = useRef<HTMLInputElement>(null);
+  const [startVoiceOnModalOpen, setStartVoiceOnModalOpen] = useState(false);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
     setIsCreateModalOpen(true);
   };
-  
-  const handleExportTasks = () => {
-    if (tasks.length === 0) {
-      toast({
-        title: "Export Failed",
-        description: "No tasks to export.",
-        variant: "destructive",
-      });
-      return;
-    }
-    const jsonData = JSON.stringify(tasks, null, 2);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'taskflow_tasks.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Tasks Exported",
-      description: "Your tasks have been downloaded as a JSON file.",
-    });
-  };
 
-  const handleImportFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const importedTasks = JSON.parse(e.target?.result as string) as Task[];
-          if (Array.isArray(importedTasks) && importedTasks.every(t => t.id && t.subject && t.status)) {
-            setTasks(importedTasks);
-            toast({
-              title: "Tasks Imported",
-              description: `${importedTasks.length} tasks have been successfully imported.`,
-            });
-          } else {
-            throw new Error("Invalid task structure in JSON file.");
-          }
-        } catch (error) {
-          console.error("Failed to import tasks:", error);
-          toast({
-            title: "Import Failed",
-            description: error instanceof Error ? error.message : "Could not parse the JSON file. Please ensure it's a valid TaskFlow export.",
-            variant: "destructive",
-          });
-        }
-      };
-      reader.onerror = () => {
-        toast({
-            title: "Import Failed",
-            description: "Error reading the file.",
-            variant: "destructive",
-          });
-      }
-      reader.readAsText(file);
-    }
-    if (importFileRef.current) {
-      importFileRef.current.value = "";
-    }
-  };
-  
-  const triggerImport = () => importFileRef.current?.click();
-  
+  const triggerImportAndClose = () => triggerImport();
+
   const handleViewCompleted = () => {
     setStatusFilter('closed');
     setSelectedDateFilter('all');
@@ -116,25 +55,7 @@ const Index = () => {
   
   const handleTaskFormSubmit = (data: TaskFormData) => {
     if (taskToEdit) {
-      let recurrence: TaskRecurrence | undefined = undefined;
-      if (data.recurrence) {
-        const r = data.recurrence;
-        if (r.type === 'weekly') {
-          recurrence = { type: 'weekly', weekDay: r.weekDay, interval: 1 };
-        } else if (r.type === 'monthly') {
-          recurrence = { type: 'monthly', monthDay: r.monthDay, interval: 1 };
-        } else if (r.type === 'yearly' && r.monthDate && r.monthDate.month != null && r.monthDate.day != null) {
-          recurrence = { type: 'yearly', monthDate: { month: r.monthDate.month, day: r.monthDate.day }, interval: 1 };
-        }
-      }
-
-      const { recurrence: _formRecurrence, ...restData } = data;
-
-      const updatedTask: Task = {
-        ...taskToEdit,
-        ...restData,
-        recurrence,
-      };
+      const updatedTask = mapTaskFormDataToTask(data, taskToEdit);
       handleUpdateTask(updatedTask);
     } else {
       handleCreateTask(data);
@@ -146,6 +67,13 @@ const Index = () => {
   const handleModalClose = () => {
     setIsCreateModalOpen(false);
     setTaskToEdit(null);
+    setStartVoiceOnModalOpen(false);
+  };
+  
+  const handleVoiceTaskCreation = () => {
+    setTaskToEdit(null);
+    setStartVoiceOnModalOpen(true);
+    setIsCreateModalOpen(true);
   };
 
   return (
@@ -160,9 +88,10 @@ const Index = () => {
       
       <Header
         onNewTask={() => { setTaskToEdit(null); setIsCreateModalOpen(true); }}
-        onImport={triggerImport}
+        onImport={triggerImportAndClose}
         onExport={handleExportTasks}
         onViewCompleted={handleViewCompleted}
+        onVoiceTask={handleVoiceTaskCreation}
       />
 
       <div className="relative p-6 pb-8 -mt-8">
@@ -205,6 +134,8 @@ const Index = () => {
         onClose={handleModalClose}
         onSubmit={handleTaskFormSubmit}
         taskToEdit={taskToEdit}
+        startWithVoice={startVoiceOnModalOpen}
+        onVoiceStartHandled={() => setStartVoiceOnModalOpen(false)}
       />
     </div>
   );

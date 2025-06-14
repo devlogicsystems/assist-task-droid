@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { addDays, addMonths, addYears, set, isBefore, format } from 'date-fns';
-import { Task, TaskStatus, TaskRecurrence } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
 import { TaskFormData } from '@/lib/validations/task';
+import { useRecurringTasks } from './useRecurringTasks';
+import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 
 const sampleTasks: Task[] = [
   {
@@ -74,104 +75,11 @@ export const useTaskManager = () => {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const { toast } = useToast();
 
+  useRecurringTasks(tasks, setTasks);
+
   useEffect(() => {
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
   }, [tasks]);
-
-  useEffect(() => {
-    const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date => {
-      let candidate = new Date(after);
-      switch (recurrence.type) {
-        case 'weekly':
-          candidate = addDays(candidate, 1);
-          while (candidate.getDay() !== recurrence.weekDay) {
-            candidate = addDays(candidate, 1);
-          }
-          return candidate;
-        case 'monthly': {
-          candidate = addDays(candidate, 1);
-          const monthDay = recurrence.monthDay;
-          if (candidate.getDate() > monthDay) {
-            candidate = addMonths(candidate, 1);
-          }
-          let tempCandidate = set(candidate, { date: monthDay });
-          // Handle cases for months with fewer days
-          while (tempCandidate.getMonth() > candidate.getMonth()) {
-            candidate = addMonths(candidate, 1);
-            tempCandidate = set(candidate, { date: monthDay });
-          }
-          return tempCandidate;
-        }
-        case 'yearly': {
-          let year = after.getFullYear();
-          const month = recurrence.monthDate.month;
-          const day = recurrence.monthDate.day;
-          candidate = new Date(year, month, day);
-          if (isBefore(candidate, after) || candidate.getTime() === after.getTime()) {
-            candidate = new Date(year + 1, month, day);
-          }
-          return candidate;
-        }
-        default:
-          throw new Error('Unknown recurrence type');
-      }
-    };
-
-    const recurringTemplates = tasks.filter(t => t.recurrence);
-    if (!recurringTemplates.length) return;
-
-    let newTasks: Task[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkEndDate = addDays(today, 5);
-
-    recurringTemplates.forEach(template => {
-      const existingInstances = tasks
-        .filter(t => t.recurrenceTemplateId === template.id)
-        .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
-      
-      let lastDueDate = existingInstances.length > 0 
-        ? new Date(existingInstances[0].dueDate)
-        : addDays(new Date(template.dueDate), -1);
-
-      let nextDueDate = lastDueDate;
-      for (let i = 0; i < 52; i++) {
-        nextDueDate = getNextOccurrence(template.recurrence!, nextDueDate);
-        
-        if (isBefore(checkEndDate, nextDueDate)) {
-          break;
-        }
-
-        const instanceExists = tasks.some(t =>
-          t.recurrenceTemplateId === template.id &&
-          new Date(t.dueDate).toDateString() === nextDueDate.toDateString()
-        );
-
-        if (!instanceExists) {
-          const newTask: Task = {
-            ...template,
-            id: `${template.id}-recur-${nextDueDate.getTime()}`,
-            dueDate: format(nextDueDate, 'yyyy-MM-dd'),
-            status: 'assigned',
-            recurrenceTemplateId: template.id,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          delete newTask.recurrence;
-          newTasks.push(newTask);
-        }
-      }
-    });
-
-    if (newTasks.length > 0) {
-      setTasks(prev => [...prev, ...newTasks]);
-      toast({
-        title: "Recurring Tasks Generated",
-        description: `${newTasks.length} upcoming tasks have been added.`,
-      });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const filteredTasks = useMemo(() => {
     let filtered = tasks;
@@ -230,34 +138,7 @@ export const useTaskManager = () => {
   }, [tasks, searchQuery, selectedDateFilter, statusFilter]);
 
   const handleCreateTask = (newTaskData: TaskFormData) => {
-    let recurrence: TaskRecurrence | undefined = undefined;
-    if (newTaskData.recurrence) {
-      const r = newTaskData.recurrence;
-      if (r.type === 'weekly') {
-        recurrence = { type: 'weekly', weekDay: r.weekDay, interval: 1 };
-      } else if (r.type === 'monthly') {
-        recurrence = { type: 'monthly', monthDay: r.monthDay, interval: 1 };
-      } else if (r.type === 'yearly' && r.monthDate && r.monthDate.month != null && r.monthDate.day != null) {
-        recurrence = { type: 'yearly', monthDate: { month: r.monthDate.month, day: r.monthDate.day }, interval: 1 };
-      }
-    }
-
-    const task: Task = {
-      id: Date.now().toString(),
-      status: 'assigned',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      subject: newTaskData.subject,
-      assignee: newTaskData.assignee,
-      dueDate: newTaskData.dueDate,
-      isFullDay: newTaskData.isFullDay,
-      labels: newTaskData.labels,
-      details: newTaskData.details,
-      dueTime: newTaskData.dueTime,
-      reminderTime: newTaskData.reminderTime,
-      url: newTaskData.url || undefined,
-      recurrence: recurrence,
-    };
+    const task = mapTaskFormDataToTask(newTaskData);
     setTasks(prev => [task, ...prev]);
     toast({
       title: "Task Created",

@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Plus, Menu as MenuIcon, Download, Upload, Eye } from 'lucide-react';
+import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DarkModeToggle from '@/components/DarkModeToggle';
 import { useTheme } from '@/hooks/useTheme';
@@ -23,9 +22,10 @@ interface HeaderProps {
   onImport: () => void;
   onExport: () => void;
   onViewCompleted: () => void;
+  onVoiceTask: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCompleted }) => {
+const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCompleted, onVoiceTask }) => {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -55,6 +55,9 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
                 <MenubarContent>
                   <MenubarItem onClick={onNewTask}>
                     <Plus className="mr-2 h-4 w-4" /> New Task
+                  </MenubarItem>
+                   <MenubarItem onClick={onVoiceTask}>
+                    <Mic className="mr-2 h-4 w-4" /> New Task with Voice
                   </MenubarItem>
                   <MenubarSeparator />
                   <MenubarItem onClick={onViewCompleted}>
@@ -88,6 +91,14 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
           </div>
           <div className="flex items-center gap-3">
             <DarkModeToggle />
+            <Button
+              onClick={onVoiceTask}
+              size="icon"
+              variant="outline"
+              className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10 border-primary-foreground/20"
+            >
+              <Mic className="w-4 h-4" />
+            </Button>
             <Button
               onClick={onNewTask}
               size="sm"
