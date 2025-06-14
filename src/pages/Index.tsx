@@ -118,11 +118,7 @@ const Index = () => {
     if (taskToEdit) {
       handleUpdateTask({ ...taskToEdit, ...data });
     } else {
-      const newTask: Omit<Task, 'id'> = {
-        ...data,
-        status: 'assigned',
-      };
-      handleCreateTask(newTask);
+      handleCreateTask(data);
     }
     setIsCreateModalOpen(false);
     setTaskToEdit(null);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Task, TaskStatus } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
+import { TaskFormData } from '@/lib/validations/task';
 
 const sampleTasks: Task[] = [
   {
@@ -132,10 +133,11 @@ export const useTaskManager = () => {
     return filtered;
   }, [tasks, searchQuery, selectedDateFilter, statusFilter]);
 
-  const handleCreateTask = (newTask: Omit<Task, 'id'>) => {
+  const handleCreateTask = (newTaskData: TaskFormData) => {
     const task: Task = {
-      ...newTask,
+      ...newTaskData,
       id: Date.now().toString(),
+      status: 'assigned',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
