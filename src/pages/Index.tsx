@@ -8,6 +8,8 @@ import FilterPanel from '@/components/FilterPanel';
 import Header from '@/components/Header';
 import { Task, TaskStatus } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
+import OverdueAssigneeChart from '@/components/OverdueAssigneeChart';
+import OverdueTrendChart from '@/components/OverdueTrendChart';
 
 const sampleTasks: Task[] = [
   {
@@ -298,6 +300,16 @@ const Index = () => {
             <div className="text-sm text-muted-foreground">Completed</div>
           </div>
         </div>
+        
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <OverdueAssigneeChart tasks={tasks} />
+          </div>
+          <div>
+            <OverdueTrendChart tasks={tasks} />
+          </div>
+        </div>
+
       </div>
       
       <div className="p-6 space-y-4 bg-card/80 border-b border-border">
