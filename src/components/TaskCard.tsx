@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar, Clock, User, CheckCircle, PlayCircle, FileText, ChevronDown, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +61,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
   };
 
   const formatDateTime = () => {
-    const date = new Date(task.dueDate);
+    if (!task.dueDate) {
+      return 'No due date';
+    }
+    // Appending 'T00:00:00' ensures the date is parsed in the local timezone,
+    // preventing off-by-one-day errors.
+    const date = new Date(`${task.dueDate}T00:00:00`);
+
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+
     const dateStr = format(date, 'MMM dd');
     
     if (task.isFullDay) {
@@ -71,14 +82,25 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
   };
 
   const isOverdue = () => {
-    if (task.status === 'closed') return false;
+    if (task.status === 'closed' || !task.dueDate) return false;
     
     const today = new Date();
-    const dueDate = new Date(task.dueDate);
+    // Appending 'T00:00:00' to parse in local timezone
+    const dueDate = new Date(`${task.dueDate}T00:00:00`);
+    
+    if (isNaN(dueDate.getTime())) {
+      return false;
+    }
     
     if (!task.isFullDay && task.dueTime) {
-      const [hours, minutes] = task.dueTime.split(':');
-      dueDate.setHours(parseInt(hours), parseInt(minutes));
+      const timeParts = task.dueTime.split(':');
+      if (timeParts.length === 2) {
+        const hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          dueDate.setHours(hours, minutes);
+        }
+      }
     }
     
     return dueDate < today;
