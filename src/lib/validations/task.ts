@@ -28,7 +28,7 @@ const recurrenceUnionSchema = z.discriminatedUnion('type', [
 export const taskFormSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
   details: z.string().optional(),
-  assignee: z.string().min(1, 'Assignee is required.'),
+  assignee: z.string().optional(),
   dueDate: z.string(),
   dueTime: z.string().optional(),
   reminderTime: z.string().optional(),

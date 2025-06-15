@@ -13,7 +13,7 @@ export const AssigneeField = () => {
       name="assignee"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Assignee *</FormLabel>
+          <FormLabel>Assignee</FormLabel>
           <FormControl>
             <Input {...field} placeholder="Enter assignee name" />
           </FormControl>
