@@ -1,4 +1,3 @@
-
 import { Task, TaskRecurrence } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 
@@ -10,11 +9,11 @@ export function mapTaskFormDataToTask(
   if (data.recurrence) {
     const r = data.recurrence;
     if (r.type === 'weekly') {
-      recurrence = { type: 'weekly', weekDay: r.weekDay, interval: 1 };
+      recurrence = { type: 'weekly', weekDays: r.weekDays, interval: 1 };
     } else if (r.type === 'monthly') {
-      recurrence = { type: 'monthly', monthDay: r.monthDay, interval: 1 };
-    } else if (r.type === 'yearly' && r.monthDate && r.monthDate.month != null && r.monthDate.day != null) {
-      recurrence = { type: 'yearly', monthDate: { month: r.monthDate.month, day: r.monthDate.day }, interval: 1 };
+      recurrence = { type: 'monthly', monthDays: r.monthDays, interval: 1 };
+    } else if (r.type === 'yearly') {
+      recurrence = { type: 'yearly', yearDates: r.yearDates, interval: 1 };
     }
   }
 

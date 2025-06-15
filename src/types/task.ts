@@ -1,4 +1,3 @@
-
 export type TaskStatus = 'assigned' | 'in-progress' | 'closed';
 
 export interface Task {
@@ -36,17 +35,17 @@ interface RecurrenceBase {
 
 export interface WeeklyRecurrence extends RecurrenceBase {
   type: 'weekly';
-  weekDay: number; // 0-6 (Sunday-Saturday)
+  weekDays: number[]; // 0-6 (Sunday-Saturday)
 }
 
 export interface MonthlyRecurrence extends RecurrenceBase {
   type: 'monthly';
-  monthDay: number; // 1-31
+  monthDays: number[]; // 1-31
 }
 
 export interface YearlyRecurrence extends RecurrenceBase {
   type: 'yearly';
-  monthDate: { month: number; day: number }; // For yearly
+  yearDates: { month: number; day: number }[]; // For yearly
 }
 
 export type TaskRecurrence = WeeklyRecurrence | MonthlyRecurrence | YearlyRecurrence;

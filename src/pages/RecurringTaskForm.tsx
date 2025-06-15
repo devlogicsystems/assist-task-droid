@@ -9,7 +9,6 @@ import { taskFormSchema, TaskFormData } from '@/lib/validations/task';
 import { SubjectField } from '@/components/task-form/SubjectField';
 import { DetailsField } from '@/components/task-form/DetailsField';
 import { AssigneeField } from '@/components/task-form/AssigneeField';
-import { DueDateFields } from '@/components/task-form/DueDateFields';
 import { LabelsField } from '@/components/task-form/LabelsField';
 import { UrlField } from '@/components/task-form/UrlField';
 import { RecurrenceField } from '@/components/task-form/RecurrenceField';
@@ -29,14 +28,14 @@ const RecurringTaskForm = () => {
       subject: '',
       details: '',
       assignee: '',
-      dueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date().toISOString().split('T')[0], // This will be used as the starting point for recurrences
       dueTime: '',
       isFullDay: true,
       labels: [],
       url: '',
       recurrence: {
         type: 'weekly',
-        weekDay: new Date().getDay(),
+        weekDays: [new Date().getDay()],
       },
     },
   });
@@ -49,6 +48,10 @@ const RecurringTaskForm = () => {
             variant: "destructive",
         });
         return;
+    }
+    // Forcing a valid due date for templates, though not displayed
+    if (!data.dueDate) {
+        data.dueDate = new Date().toISOString().split('T')[0];
     }
     handleCreateTask(data);
     navigate('/');
@@ -69,7 +72,6 @@ const RecurringTaskForm = () => {
               <SubjectField />
               <DetailsField />
               <AssigneeField />
-              <DueDateFields />
               <LabelsField />
               <UrlField />
               <RecurrenceField forceRecurring={true} />

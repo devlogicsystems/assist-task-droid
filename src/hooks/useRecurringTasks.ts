@@ -1,46 +1,66 @@
 
 import { useEffect } from 'react';
-import { addDays, addMonths, set, isBefore, format, addYears } from 'date-fns';
+import { addDays, addMonths, set, isBefore, format, addYears, isAfter } from 'date-fns';
 import { Task, TaskRecurrence } from '@/types/task';
 import { useToast } from "@/hooks/use-toast";
 
-const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date => {
-  let candidate = new Date(after);
+const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date | null => {
+  const candidates: Date[] = [];
+  
   switch (recurrence.type) {
     case 'weekly':
-      candidate = addDays(candidate, 1);
-      while (candidate.getDay() !== recurrence.weekDay) {
+      if (!recurrence.weekDays || recurrence.weekDays.length === 0) return null;
+      recurrence.weekDays.forEach(weekDay => {
+        let candidate = new Date(after);
+        // Start check from day after 'after' date
         candidate = addDays(candidate, 1);
-      }
-      return candidate;
-    case 'monthly': {
-      candidate = addDays(candidate, 1);
-      const monthDay = recurrence.monthDay;
-      if (candidate.getDate() > monthDay) {
-        candidate = addMonths(candidate, 1);
-      }
-      let tempCandidate = set(candidate, { date: monthDay });
-      // Handle cases for months with fewer days
-      while (tempCandidate.getMonth() > candidate.getMonth()) {
-        candidate = addMonths(candidate, 1);
-        tempCandidate = set(candidate, { date: monthDay });
-      }
-      return tempCandidate;
-    }
-    case 'yearly': {
-      let year = after.getFullYear();
-      const month = recurrence.monthDate.month;
-      const day = recurrence.monthDate.day;
-      candidate = new Date(year, month, day);
-      if (isBefore(candidate, after) || candidate.getTime() === after.getTime()) {
-        candidate = new Date(year + 1, month, day);
-      }
-      return candidate;
-    }
+        while (candidate.getDay() !== weekDay) {
+          candidate = addDays(candidate, 1);
+        }
+        candidates.push(candidate);
+      });
+      break;
+
+    case 'monthly':
+      if (!recurrence.monthDays || recurrence.monthDays.length === 0) return null;
+      recurrence.monthDays.forEach(monthDay => {
+        // Check current month
+        let candidateCurrentMonth = set(after, { date: monthDay });
+        if (candidateCurrentMonth.getDate() === monthDay && isAfter(candidateCurrentMonth, after)) {
+          candidates.push(candidateCurrentMonth);
+        }
+        
+        // Check next month
+        let candidateNextMonth = set(addMonths(after, 1), { date: monthDay });
+        if (candidateNextMonth.getDate() === monthDay) {
+          candidates.push(candidateNextMonth);
+        }
+      });
+      break;
+      
+    case 'yearly':
+      if (!recurrence.yearDates || recurrence.yearDates.length === 0) return null;
+      recurrence.yearDates.forEach(date => {
+        let candidate = new Date(after.getFullYear(), date.month, date.day);
+        if (isBefore(candidate, after) || candidate.getTime() === after.getTime()) {
+          candidate = addYears(candidate, 1);
+        }
+        candidates.push(candidate);
+      });
+      break;
+      
     default:
-      throw new Error('Unknown recurrence type');
+      return null;
   }
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  candidates.sort((a, b) => a.getTime() - b.getTime());
+  return candidates[0];
 };
+
 
 export const useRecurringTasks = (
   tasks: Task[],
@@ -64,23 +84,24 @@ export const useRecurringTasks = (
       
       let lastDueDate = existingInstances.length > 0 
         ? new Date(existingInstances[0].dueDate)
-        : addDays(new Date(template.dueDate), -1);
+        : addDays(new Date(template.dueDate || new Date()), -1);
 
-      let nextDueDate = lastDueDate;
+      let nextDueDate: Date | null = lastDueDate;
       for (let i = 0; i < 52; i++) {
         if (!template.recurrence) continue;
+        
         nextDueDate = getNextOccurrence(template.recurrence, nextDueDate);
         
-        if (isBefore(checkEndDate, nextDueDate)) {
+        if (!nextDueDate || isBefore(checkEndDate, nextDueDate)) {
           break;
         }
 
         const instanceExists = tasks.some(t =>
           t.recurrenceTemplateId === template.id &&
-          new Date(t.dueDate).toDateString() === nextDueDate.toDateString()
+          new Date(t.dueDate).toDateString() === nextDueDate?.toDateString()
         );
 
-        if (!instanceExists) {
+        if (!instanceExists && nextDueDate) {
           const newTask: Task = {
             ...template,
             id: `${template.id}-recur-${nextDueDate.getTime()}`,
