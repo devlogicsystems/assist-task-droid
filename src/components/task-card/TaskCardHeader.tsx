@@ -83,7 +83,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
           {task.labels && task.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {task.labels.map((label, index) => (
-                <Badge key={index} variant="secondary" className="text-xs px-2 py-0.5 bg-secondary/20 text-secondary border border-secondary/30">
+                <Badge key={index} variant="secondary" className="text-xs px-2 py-0.5 bg-accent/20 text-accent border border-accent/30">
                   {label}
                 </Badge>
               ))}
