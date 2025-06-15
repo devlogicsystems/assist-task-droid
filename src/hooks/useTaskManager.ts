@@ -159,6 +159,20 @@ export const useTaskManager = () => {
     });
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    const taskToDelete = tasks.find(t => t.id === taskId);
+    if (!taskToDelete) return;
+
+    setTasks(prev => prev.filter(task => {
+        // remove the template itself or any instances of it
+        return task.id !== taskId && task.recurrenceTemplateId !== taskId;
+    }));
+    toast({
+      title: "Task Template Deleted",
+      description: `"${taskToDelete.subject}" and its instances have been removed.`,
+    });
+  };
+
   const getTasksByStatus = (status: TaskStatus) => tasks.filter(task => task.status === status).length;
   
   return {
@@ -173,6 +187,7 @@ export const useTaskManager = () => {
     filteredTasks,
     handleCreateTask,
     handleUpdateTask,
+    handleDeleteTask,
     getTasksByStatus,
   };
 };

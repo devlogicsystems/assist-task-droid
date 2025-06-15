@@ -9,9 +9,10 @@ interface TaskListProps {
   searchQuery: string;
   onUpdate: (task: Task) => void;
   onEdit: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, searchQuery, onUpdate, onEdit }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, searchQuery, onUpdate, onEdit, onDelete }) => {
   return (
     <div className="bg-background pb-6">
       {tasks.length > 0 ? (
@@ -22,6 +23,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, searchQuery, onUpdate, onEdi
               task={task}
               onUpdate={onUpdate}
               onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))}
         </div>

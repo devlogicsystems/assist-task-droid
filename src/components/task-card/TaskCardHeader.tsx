@@ -1,10 +1,21 @@
 
-import React from 'react';
-import { Calendar, User, ChevronDown, ChevronRight, Edit } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, User, ChevronDown, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Task } from '@/types/task';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface TaskCardHeaderProps {
   task: Task;
@@ -12,6 +23,7 @@ interface TaskCardHeaderProps {
   onToggleExpand: () => void;
   onEdit: () => void;
   onStatusChange: () => void;
+  onDelete?: () => void;
   isOverdue: boolean;
   isEditable: boolean;
   statusColor: string;
@@ -26,6 +38,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   onToggleExpand,
   onEdit,
   onStatusChange,
+  onDelete,
   isOverdue,
   isEditable,
   statusColor,
@@ -94,6 +107,33 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
             </TooltipContent>
           )}
         </Tooltip>
+
+        {isTemplate && task.templateStatus === 'inactive' && onDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="icon"
+                variant="destructive"
+                className="h-8 w-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the recurring task template and all of its associated task instances.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={(e) => { e.stopPropagation(); onDelete(); }}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         {isTemplate ? (
           <Button

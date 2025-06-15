@@ -28,6 +28,7 @@ const Index = () => {
     handleCreateTask,
     handleUpdateTask,
     getTasksByStatus,
+    handleDeleteTask,
   } = useTaskManager();
   
   const { importFileRef, triggerImport, handleExportTasks, handleImportFileSelect } = useTaskIO(tasks, setTasks);
@@ -36,10 +37,19 @@ const Index = () => {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [recurringFilter, setRecurringFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const navigate = useNavigate();
 
   const recurringTaskTemplates = useMemo(() => {
     let filtered = tasks.filter(t => t.recurrence);
+
+    if (recurringFilter !== 'all') {
+      if (recurringFilter === 'active') {
+        filtered = filtered.filter(t => t.templateStatus === 'active' || typeof t.templateStatus === 'undefined');
+      } else { // inactive
+        filtered = filtered.filter(t => t.templateStatus === 'inactive');
+      }
+    }
 
     if (searchQuery) {
         const lowercasedQuery = searchQuery.toLowerCase();
@@ -51,7 +61,7 @@ const Index = () => {
         );
     }
     return filtered;
-  }, [tasks, searchQuery]);
+  }, [tasks, searchQuery, recurringFilter]);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
@@ -170,8 +180,11 @@ const Index = () => {
               tasks={recurringTaskTemplates}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              recurringFilter={recurringFilter}
+              setRecurringFilter={setRecurringFilter}
               onUpdate={handleUpdateTask}
               onEdit={handleEditRecurringTask}
+              onDelete={handleDeleteTask}
             />
           </TabsContent>
         </Tabs>

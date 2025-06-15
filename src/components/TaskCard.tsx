@@ -9,9 +9,10 @@ interface TaskCardProps {
   task: Task;
   onUpdate: (task: Task) => void;
   onEdit: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit, onDelete }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const {
     getStatusColor,
@@ -42,6 +43,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
     setIsExpanded(!isExpanded);
   }
 
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(task.id);
+    }
+  };
+
   const handleMakeRecurring = () => {
     if (task.recurrence) return;
 
@@ -68,6 +75,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
         onToggleExpand={toggleExpand}
         onEdit={handleEdit}
         onStatusChange={handleStatusChange}
+        onDelete={handleDelete}
         isOverdue={isOverdue}
         isEditable={isEditable}
         statusColor={getStatusColor(task.status)}
