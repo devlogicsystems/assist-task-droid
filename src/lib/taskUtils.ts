@@ -23,7 +23,7 @@ export function mapTaskFormDataToTask(
   const taskData = {
     subject: data.subject,
     details: data.details,
-    assignee: data.assignee,
+    assignee: data.assignee || 'Self',
     dueDate: data.dueDate,
     dueTime: data.dueTime,
     reminderTime: data.reminderTime,

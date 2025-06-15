@@ -61,13 +61,18 @@ const TASKS_STORAGE_KEY = 'taskflow_tasks';
 
 export const useTaskManager = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
+    let initialTasks: Task[];
     try {
       const storedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
-      return storedTasks ? JSON.parse(storedTasks) : sampleTasks;
+      initialTasks = storedTasks ? JSON.parse(storedTasks) : sampleTasks;
     } catch (error) {
       console.error("Failed to parse tasks from localStorage:", error);
-      return sampleTasks;
+      initialTasks = sampleTasks;
     }
+    return initialTasks.map(task => ({
+      ...task,
+      assignee: task.assignee || 'Self'
+    }));
   });
 
   const [searchQuery, setSearchQuery] = useState('');
