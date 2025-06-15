@@ -1,5 +1,5 @@
 
-import { addDays, format } from 'date-fns';
+import { addDays, format, addMinutes, addHours } from 'date-fns';
 
 interface ParsedTaskData {
   subject?: string;
@@ -47,22 +47,35 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
     data.isFullDay = true;
   }
 
-  // 3. Due Date
-  const today = new Date();
-  if (lowerCommand.includes('tomorrow')) {
-    data.dueDate = formatDate(addDays(today, 1));
+  // 3. Due Date and Time from relative phrases
+  const now = new Date();
+  const minutesMatch = lowerCommand.match(/in (?:next )?(\d+)\s+minutes?/i);
+  const hoursMatch = lowerCommand.match(/in (?:next )?(\d+)\s+hours?/i);
+
+  if (minutesMatch && minutesMatch[1]) {
+    const minutes = parseInt(minutesMatch[1], 10);
+    const dueDate = addMinutes(now, minutes);
+    data.dueDate = format(dueDate, 'yyyy-MM-dd');
+    data.dueTime = format(dueDate, 'HH:mm');
+  } else if (hoursMatch && hoursMatch[1]) {
+    const hours = parseInt(hoursMatch[1], 10);
+    const dueDate = addHours(now, hours);
+    data.dueDate = format(dueDate, 'yyyy-MM-dd');
+    data.dueTime = format(dueDate, 'HH:mm');
+  } else if (lowerCommand.includes('tomorrow')) {
+    data.dueDate = formatDate(addDays(now, 1));
   } else if (lowerCommand.includes('today')) {
-    data.dueDate = formatDate(today);
+    data.dueDate = formatDate(now);
   } else {
     const nextDaysMatch = lowerCommand.match(/in (?:next )?(\d+)\s+days?/i);
     if (nextDaysMatch && nextDaysMatch[1]) {
       const days = parseInt(nextDaysMatch[1], 10);
-      data.dueDate = formatDate(addDays(today, days));
+      data.dueDate = formatDate(addDays(now, days));
     }
   }
 
-  // 4. Due Time
-  if (!data.isFullDay) {
+  // 4. Due Time (if not set by relative phrases)
+  if (!data.dueTime && !data.isFullDay) {
     const timeMatch = lowerCommand.match(/(?:due time (?:will be|is)?|at) (.*?)(?:\.|$| and| assign)/i);
     if (timeMatch && timeMatch[1]) {
       data.dueTime = parseTime(timeMatch[1].trim());
