@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
@@ -51,7 +50,7 @@ export const useTaskModals = ({ handleCreateTask, handleUpdateTask }: UseTaskMod
       assignee: parsedData.assignee || '',
       dueDate: parsedData.dueDate || '',
       dueTime: parsedData.dueTime || '',
-      isFullDay: !parsedData.dueTime,
+      isFullDay: parsedData.isFullDay || false,
       reminderTime: '',
       labels: [],
       url: '',

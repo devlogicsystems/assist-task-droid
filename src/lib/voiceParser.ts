@@ -1,4 +1,3 @@
-
 import { addDays, format } from 'date-fns';
 
 interface ParsedTaskData {
@@ -6,6 +5,7 @@ interface ParsedTaskData {
   dueDate?: string;
   dueTime?: string;
   assignee?: string;
+  isFullDay?: boolean;
 }
 
 const formatDate = (date: Date): string => format(date, 'yyyy-MM-dd');
@@ -30,7 +30,7 @@ const parseTime = (timeStr: string): string | undefined => {
 };
 
 export const parseVoiceCommand = (command: string): ParsedTaskData => {
-  const data: ParsedTaskData = {};
+  const data: ParsedTaskData = { isFullDay: false };
   const lowerCommand = command.toLowerCase();
 
   // 1. Assignee
@@ -40,21 +40,36 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
     data.assignee = assignee.split(' ').map(name => name.charAt(0).toUpperCase() + name.slice(1)).join(' ');
   }
 
-  // 2. Due Date
+  // 2. Full Day Task
+  if (lowerCommand.includes('full day task')) {
+    data.isFullDay = true;
+  }
+
+  // 3. Due Date
   const today = new Date();
   if (lowerCommand.includes('tomorrow')) {
     data.dueDate = formatDate(addDays(today, 1));
   } else if (lowerCommand.includes('today')) {
     data.dueDate = formatDate(today);
+  } else {
+    const nextDaysMatch = lowerCommand.match(/in (?:next )?(\d+)\s+days?/i);
+    if (nextDaysMatch && nextDaysMatch[1]) {
+      const days = parseInt(nextDaysMatch[1], 10);
+      data.dueDate = formatDate(addDays(today, days));
+    }
   }
 
-  // 3. Due Time
-  const timeMatch = lowerCommand.match(/(?:due time (?:will be|is)?|at) (.*?)(?:\.|$| and| assign)/i);
-  if (timeMatch && timeMatch[1]) {
-    data.dueTime = parseTime(timeMatch[1].trim());
+  // 4. Due Time
+  if (!data.isFullDay) {
+    const timeMatch = lowerCommand.match(/(?:due time (?:will be|is)?|at) (.*?)(?:\.|$| and| assign)/i);
+    if (timeMatch && timeMatch[1]) {
+      data.dueTime = parseTime(timeMatch[1].trim());
+    } else if (data.dueDate) {
+      data.dueTime = '10:00';
+    }
   }
 
-  // 4. Subject
+  // 5. Subject
   const subjectMatch = lowerCommand.match(/(?:create a task as|task as|subject is|call it|task is) (.*?)(?:\.|$| due| and| assign| at)/i);
   if (subjectMatch && subjectMatch[1]) {
     let subject = subjectMatch[1].trim();

@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { parseVoiceCommand } from '@/lib/voiceParser';
@@ -56,9 +55,13 @@ export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
           if (parsedData.dueDate) {
             form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
           }
-          if (parsedData.dueTime) {
+
+          if (parsedData.isFullDay) {
+            form.setValue('isFullDay', true, { shouldValidate: true });
+            form.setValue('dueTime', '', { shouldValidate: true });
+          } else if (parsedData.dueTime) {
             form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
-            form.setValue('isFullDay', false);
+            form.setValue('isFullDay', false, { shouldValidate: true });
           }
           
           toast({
