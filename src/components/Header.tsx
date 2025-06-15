@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic } from 'lucide-react';
+import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DarkModeToggle from '@/components/DarkModeToggle';
 import { useTheme } from '@/hooks/useTheme';
@@ -23,9 +24,10 @@ interface HeaderProps {
   onExport: () => void;
   onViewCompleted: () => void;
   onVoiceTask: () => void;
+  onAddRecurringTask: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCompleted, onVoiceTask }) => {
+const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCompleted, onVoiceTask, onAddRecurringTask }) => {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -56,6 +58,9 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
                   <MenubarItem onClick={onNewTask}>
                     <Plus className="mr-2 h-4 w-4" /> New Task
                   </MenubarItem>
+                  <MenubarItem onClick={onAddRecurringTask}>
+                    <Repeat className="mr-2 h-4 w-4" /> Add Recurring Task
+                  </MenubarItem>
                    <MenubarItem onClick={onVoiceTask}>
                     <Mic className="mr-2 h-4 w-4" /> New Task with Voice
                   </MenubarItem>
@@ -85,27 +90,27 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
               </MenubarMenu>
             </Menubar>
             <div>
-              <h1 className="text-3xl font-bold text-primary-foreground">TaskFlow</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary-foreground">TaskFlow</h1>
               <p className="text-primary-foreground/80 text-sm mt-1">Organize your work efficiently</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <DarkModeToggle />
             <Button
               onClick={onVoiceTask}
               size="icon"
               variant="outline"
-              className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10 border-primary-foreground/20"
+              className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10 border-primary-foreground/20 hidden sm:inline-flex"
             >
               <Mic className="w-4 h-4" />
             </Button>
             <Button
               onClick={onNewTask}
               size="sm"
-              className="bg-accent text-accent-foreground hover:bg-accent/90 border border-accent shadow-lg font-medium"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 border border-accent shadow-lg font-medium p-2.5 sm:px-3"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              New Task
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">New Task</span>
             </Button>
           </div>
         </div>

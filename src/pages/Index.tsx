@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
@@ -65,6 +66,8 @@ const Index = () => {
   const handleEditRecurringTask = (task: Task) => {
     navigate(`/edit-recurring/${task.id}`);
   };
+
+  const handleAddRecurringTask = () => navigate('/create-recurring');
 
   const triggerImportAndClose = () => triggerImport();
 
@@ -134,6 +137,7 @@ const Index = () => {
         onExport={handleExportTasks}
         onViewCompleted={handleViewCompleted}
         onVoiceTask={handleVoiceTaskCreation}
+        onAddRecurringTask={handleAddRecurringTask}
       />
 
       <div className="relative p-6 pb-8 -mt-8">
@@ -181,7 +185,7 @@ const Index = () => {
             />
           </TabsContent>
           <TabsContent value="recurring">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
               <TaskFilters 
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
