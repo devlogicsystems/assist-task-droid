@@ -28,7 +28,7 @@ export function mapTaskFormDataToTask(
     dueTime: data.dueTime,
     reminderTime: data.reminderTime,
     isFullDay: data.isFullDay,
-    labels: data.labels,
+    labels: data.labels && data.labels.length > 0 ? data.labels : ['General'],
     url: data.url || undefined,
     recurrence,
   };
