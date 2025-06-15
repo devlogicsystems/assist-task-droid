@@ -82,7 +82,7 @@ export const useTaskManager = () => {
   }, [tasks]);
 
   const filteredTasks = useMemo(() => {
-    let filtered = tasks;
+    let filtered = tasks.filter(task => !task.recurrence);
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter(task => task.status === statusFilter);
