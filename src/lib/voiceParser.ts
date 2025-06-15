@@ -71,6 +71,36 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
     if (nextDaysMatch && nextDaysMatch[1]) {
       const days = parseInt(nextDaysMatch[1], 10);
       data.dueDate = formatDate(addDays(now, days));
+    } else {
+      const monthNames = 'january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec';
+      const dateMatch = lowerCommand.match(new RegExp(`\\bon\\s+(${monthNames})\\s+(\\d{1,2})`, 'i'));
+      
+      if (dateMatch) {
+        const monthStr = dateMatch[1].toLowerCase();
+        const day = parseInt(dateMatch[2], 10);
+
+        const monthMap: { [key: string]: number } = {
+            jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3, may: 4,
+            jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8, september: 8,
+            oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11
+        };
+        const month = monthMap[monthStr];
+
+        if (month !== undefined) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let year = today.getFullYear();
+            const prospectiveDate = new Date(year, month, day);
+            
+            if (prospectiveDate < today) {
+                year++;
+            }
+            
+            const dueDate = new Date(year, month, day);
+            data.dueDate = formatDate(dueDate);
+        }
+      }
     }
   }
 
@@ -85,7 +115,7 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
   }
 
   // 5. Subject
-  const subjectMatch = lowerCommand.match(/(?:create a task as|task as|subject is|call it|task is|remind me to) (.*?)(?:\.|$| due| and| assign| at| tomorrow| today| in)/i);
+  const subjectMatch = lowerCommand.match(/(?:create a task as|task as|subject is|call it|task is|remind me to) (.*?)(?:\.|$| due| and| assign| at| tomorrow| today| in| on)/i);
   if (subjectMatch && subjectMatch[1]) {
     let subject = subjectMatch[1].trim();
     // Handle cases like "remind me to create a task as..."
