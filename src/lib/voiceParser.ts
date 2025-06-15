@@ -85,9 +85,14 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
   }
 
   // 5. Subject
-  const subjectMatch = lowerCommand.match(/(?:create a task as|task as|subject is|call it|task is) (.*?)(?:\.|$| due| and| assign| at)/i);
+  const subjectMatch = lowerCommand.match(/(?:create a task as|task as|subject is|call it|task is|remind me to) (.*?)(?:\.|$| due| and| assign| at| tomorrow| today| in)/i);
   if (subjectMatch && subjectMatch[1]) {
     let subject = subjectMatch[1].trim();
+    // Handle cases like "remind me to create a task as..."
+    const nestedSubjectMatch = subject.match(/(?:create a task as|task as|subject is|call it|task is) (.*)/i);
+    if (nestedSubjectMatch && nestedSubjectMatch[1]) {
+        subject = nestedSubjectMatch[1].trim();
+    }
     data.subject = subject.charAt(0).toUpperCase() + subject.slice(1);
   }
 

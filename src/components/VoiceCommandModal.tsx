@@ -36,6 +36,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
   const handleSubmit = () => {
     if (command.trim()) {
       onSubmit(command);
+      setCommand('');
     }
   };
   
