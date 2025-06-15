@@ -2,15 +2,13 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Task } from '@/types/task';
-import { Clock, FileText, Repeat } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Clock, FileText } from 'lucide-react';
 
 interface TaskCardExpandedContentProps {
   task: Task;
-  onMakeRecurring: () => void;
 }
 
-const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task, onMakeRecurring }) => {
+const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task }) => {
   return (
     <div className="px-4 pb-4 border-t border-border/20 animate-expand">
       <div className="pt-3 space-y-3">
@@ -53,21 +51,6 @@ const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task,
           )}
         </div>
         
-        {!task.recurrence && (
-          <div className="mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMakeRecurring();
-              }}
-            >
-              <Repeat className="mr-2 h-4 w-4" />
-              Make Recurring
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
