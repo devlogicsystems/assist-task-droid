@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
           className="pl-11 h-12 text-base border-2 focus:border-primary bg-background text-foreground placeholder:text-muted-foreground"
         />
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex flex-wrap gap-2">
           <Button onClick={() => { setStatusFilter('all'); setSelectedDateFilter('all'); }} variant={statusFilter === 'all' && selectedDateFilter === 'all' ? 'default' : 'outline'}>Pending Tasks</Button>
           {(['today', 'tomorrow', 'next5days', 'next30days'] as DateFilter[]).map((filter) => (
             <Button
@@ -41,7 +40,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
               onClick={() => { setStatusFilter('all'); setSelectedDateFilter(filter); }}
               variant={selectedDateFilter === filter && statusFilter === 'all' ? 'default' : 'outline'}
               size="sm"
-              className={`whitespace-nowrap ${
+              className={`${
                 selectedDateFilter === filter && statusFilter === 'all'
                   ? 'bg-primary text-primary-foreground shadow-lg' 
                   : 'bg-background hover:bg-muted border-2 text-foreground border-border/50'
