@@ -1,16 +1,13 @@
 
 import React from 'react';
-import { User, Clock, CheckCircle } from 'lucide-react';
-import { TaskStatus } from '@/types/task';
-
-type DateFilter = 'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days';
+import { ListTodo, Calendar, CalendarClock, CalendarDays } from 'lucide-react';
 
 interface DashboardStatsProps {
-  assignedCount: number;
-  inProgressCount: number;
-  completedCount: number;
-  onFilterChange: (status: TaskStatus, date: DateFilter) => void;
-  onViewCompleted: () => void;
+  pendingTasksCount: number;
+  todayTasksCount: number;
+  next5DaysTasksCount: number;
+  next30DaysTasksCount: number;
+  onCardClick: (date: 'all' | 'today' | 'next5days' | 'next30days') => void;
 }
 
 const StatCard: React.FC<{ icon: React.ReactNode; title: string; count: number; onClick: () => void; }> = ({ icon, title, count, onClick }) => (
@@ -23,26 +20,38 @@ const StatCard: React.FC<{ icon: React.ReactNode; title: string; count: number; 
   </div>
 );
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({ assignedCount, inProgressCount, completedCount, onFilterChange, onViewCompleted }) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ 
+    pendingTasksCount, 
+    todayTasksCount, 
+    next5DaysTasksCount, 
+    next30DaysTasksCount, 
+    onCardClick 
+}) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard 
-        icon={<User className="w-5 h-5 text-accent" />}
-        title="Assigned"
-        count={assignedCount}
-        onClick={() => onFilterChange('assigned', 'all')}
+        icon={<ListTodo className="w-5 h-5 text-accent" />}
+        title="Total Pending Tasks"
+        count={pendingTasksCount}
+        onClick={() => onCardClick('all')}
       />
       <StatCard 
-        icon={<Clock className="w-5 h-5 text-secondary" />}
-        title="In Progress"
-        count={inProgressCount}
-        onClick={() => onFilterChange('in-progress', 'all')}
+        icon={<Calendar className="w-5 h-5 text-secondary" />}
+        title="Today's Tasks"
+        count={todayTasksCount}
+        onClick={() => onCardClick('today')}
       />
       <StatCard 
-        icon={<CheckCircle className="w-5 h-5 text-green-500" />}
-        title="Completed"
-        count={completedCount}
-        onClick={onViewCompleted}
+        icon={<CalendarClock className="w-5 h-5 text-green-500" />}
+        title="Due in next 5 days"
+        count={next5DaysTasksCount}
+        onClick={() => onCardClick('next5days')}
+      />
+      <StatCard 
+        icon={<CalendarDays className="w-5 h-5 text-blue-500" />}
+        title="Due in next 30 days"
+        count={next30DaysTasksCount}
+        onClick={() => onCardClick('next30days')}
       />
     </div>
   );

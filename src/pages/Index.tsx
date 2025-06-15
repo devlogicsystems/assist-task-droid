@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
@@ -27,8 +28,9 @@ const Index = () => {
     filteredTasks,
     handleCreateTask,
     handleUpdateTask,
-    getTasksByStatus,
     handleDeleteTask,
+    getPendingTasksCount,
+    getTasksCountByDate,
   } = useTaskManager();
   
   const { importFileRef, triggerImport, handleExportTasks, handleImportFileSelect } = useTaskIO(tasks, setTasks);
@@ -82,11 +84,11 @@ const Index = () => {
     setActiveTab('tasks');
   };
 
-  const handleFilterChange = (status: TaskStatus, date: 'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days') => {
-    setStatusFilter(status);
-    setSelectedDateFilter(date);
+  const handleDashboardCardClick = (dateFilter: 'all' | 'today' | 'next5days' | 'next30days') => {
+    setStatusFilter('all');
+    setSelectedDateFilter(dateFilter);
     setActiveTab('tasks');
-  }
+  };
   
   const handleTaskFormSubmit = (data: TaskFormData) => {
     if (taskToEdit) {
@@ -157,9 +159,11 @@ const Index = () => {
           <TabsContent value="dashboard">
             <DashboardTab
               tasks={tasks}
-              getTasksByStatus={getTasksByStatus}
-              handleFilterChange={handleFilterChange}
-              handleViewCompleted={handleViewCompleted}
+              pendingTasksCount={getPendingTasksCount()}
+              todayTasksCount={getTasksCountByDate('today')}
+              next5DaysTasksCount={getTasksCountByDate('next5days')}
+              next30DaysTasksCount={getTasksCountByDate('next30days')}
+              onCardClick={handleDashboardCardClick}
             />
           </TabsContent>
           <TabsContent value="tasks">

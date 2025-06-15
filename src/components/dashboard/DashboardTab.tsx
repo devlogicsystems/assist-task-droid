@@ -1,33 +1,35 @@
 
 import React from 'react';
-import { Task, TaskStatus } from '@/types/task';
+import { Task } from '@/types/task';
 import DashboardStats from '@/components/DashboardStats';
 import OverdueAssigneeChart from '@/components/OverdueAssigneeChart';
 import OverdueTrendChart from '@/components/OverdueTrendChart';
 
-type DateFilter = 'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days';
-
 interface DashboardTabProps {
   tasks: Task[];
-  getTasksByStatus: (status: TaskStatus) => number;
-  handleFilterChange: (status: TaskStatus, date: DateFilter) => void;
-  handleViewCompleted: () => void;
+  pendingTasksCount: number;
+  todayTasksCount: number;
+  next5DaysTasksCount: number;
+  next30DaysTasksCount: number;
+  onCardClick: (date: 'all' | 'today' | 'next5days' | 'next30days') => void;
 }
 
 const DashboardTab: React.FC<DashboardTabProps> = ({
   tasks,
-  getTasksByStatus,
-  handleFilterChange,
-  handleViewCompleted,
+  pendingTasksCount,
+  todayTasksCount,
+  next5DaysTasksCount,
+  next30DaysTasksCount,
+  onCardClick,
 }) => {
   return (
     <>
       <DashboardStats
-        assignedCount={getTasksByStatus('assigned')}
-        inProgressCount={getTasksByStatus('in-progress')}
-        completedCount={getTasksByStatus('closed')}
-        onFilterChange={handleFilterChange}
-        onViewCompleted={handleViewCompleted}
+        pendingTasksCount={pendingTasksCount}
+        todayTasksCount={todayTasksCount}
+        next5DaysTasksCount={next5DaysTasksCount}
+        next30DaysTasksCount={next30DaysTasksCount}
+        onCardClick={onCardClick}
       />
       
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
