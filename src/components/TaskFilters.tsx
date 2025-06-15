@@ -2,8 +2,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TaskStatus } from '@/types/task';
-
-type DateFilter = 'all' | 'today' | 'tomorrow' | 'next5days' | 'next30days';
+import { DateFilter } from '@/hooks/useTaskFilters';
 
 interface TaskFiltersProps {
   searchQuery: string;
