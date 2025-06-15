@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Task } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 import { parseVoiceCommand } from '@/lib/voiceParser';
@@ -20,9 +20,12 @@ export const useTaskModals = ({ handleCreateTask, handleUpdateTask }: UseTaskMod
     setIsCreateModalOpen(true);
   };
 
-  const handleTaskFormSubmit = (data: TaskFormData) => {
+  const handleTaskFormSubmit = (data: TaskFormData, status?: TaskStatus) => {
     if (taskToEdit) {
       const updatedTask = mapTaskFormDataToTask(data, taskToEdit);
+      if (status) {
+        updatedTask.status = status;
+      }
       handleUpdateTask(updatedTask);
     } else {
       handleCreateTask(data);
@@ -76,4 +79,3 @@ export const useTaskModals = ({ handleCreateTask, handleUpdateTask }: UseTaskMod
     openCreateTaskModal,
   };
 };
-

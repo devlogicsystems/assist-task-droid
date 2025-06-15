@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { taskFormSchema, TaskFormData } from '@/lib/validations/task';
-import { Task } from '@/types/task';
+import { Task, TaskStatus } from '@/types/task';
 
 import { SubjectField } from './task-form/SubjectField';
 import { DetailsField } from './task-form/DetailsField';
@@ -16,11 +17,12 @@ import { ReminderTimeField } from './task-form/ReminderTimeField';
 import { LabelsField } from './task-form/LabelsField';
 import { UrlField } from './task-form/UrlField';
 import { RecurrenceField } from './task-form/RecurrenceField';
+import { StatusField } from './task-form/StatusField';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (task: TaskFormData) => void;
+  onSubmit: (task: TaskFormData, status?: TaskStatus) => void;
   taskToEdit?: Task | null;
 }
 
@@ -31,6 +33,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   taskToEdit,
 }) => {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<TaskStatus>('assigned');
   const isEditing = !!taskToEdit;
 
   const form = useForm<TaskFormData>({
@@ -73,12 +76,15 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
           recurrence: formRecurrence,
         });
 
+        setCurrentStatus(taskToEdit.status);
+
         if(taskToEdit.url || taskToEdit.recurrence) {
           setShowMoreOptions(true);
         }
       } else {
         form.reset();
         setShowMoreOptions(false);
+        setCurrentStatus('assigned');
       }
     }
   }, [isOpen, isEditing, taskToEdit, form]);
@@ -94,7 +100,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       reminderTime = '09:00';
     }
 
-    onSubmit({ ...data, reminderTime });
+    onSubmit({ ...data, reminderTime }, isEditing ? currentStatus : undefined);
     handleReset();
   };
 
@@ -113,6 +119,13 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onValidSubmit)} className="space-y-4">
+            {isEditing && taskToEdit && (
+              <StatusField 
+                value={currentStatus} 
+                onChange={setCurrentStatus}
+                isClosedTask={taskToEdit.status === 'closed'}
+              />
+            )}
             <SubjectField isListening={isListening} handleVoiceInput={handleVoiceInput} />
             <DetailsField />
             <AssigneeField />
