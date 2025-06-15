@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
 import { Task, TaskStatus } from '@/types/task';
@@ -39,6 +38,21 @@ const Index = () => {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  const recurringTaskTemplates = useMemo(() => {
+    let filtered = tasks.filter(t => t.recurrence);
+
+    if (searchQuery) {
+        const lowercasedQuery = searchQuery.toLowerCase();
+        filtered = filtered.filter(task =>
+            task.subject.toLowerCase().includes(lowercasedQuery) ||
+            task.assignee.toLowerCase().includes(lowercasedQuery) ||
+            (task.details && task.details.toLowerCase().includes(lowercasedQuery)) ||
+            task.labels.some(label => label.toLowerCase().includes(lowercasedQuery))
+        );
+    }
+    return filtered;
+  }, [tasks, searchQuery]);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
@@ -121,6 +135,7 @@ const Index = () => {
             <TabsList>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="recurring">Recurring</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="dashboard">
@@ -153,6 +168,23 @@ const Index = () => {
 
             <TaskList
               tasks={filteredTasks}
+              searchQuery={searchQuery}
+              onUpdate={handleUpdateTask}
+              onEdit={handleEditTask}
+            />
+          </TabsContent>
+          <TabsContent value="recurring">
+            <TaskFilters 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              selectedDateFilter={selectedDateFilter}
+              setSelectedDateFilter={setSelectedDateFilter}
+            />
+
+            <TaskList
+              tasks={recurringTaskTemplates}
               searchQuery={searchQuery}
               onUpdate={handleUpdateTask}
               onEdit={handleEditTask}
