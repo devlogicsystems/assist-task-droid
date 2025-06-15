@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
@@ -99,7 +98,7 @@ const Index = () => {
             <DashboardTab
               tasks={tasks}
               pendingTasksCount={getPendingTasksCount()}
-              todayTasksCount={getTasksCountbyDate('today')}
+              todayTasksCount={getTasksCountByDate('today')}
               next5DaysTasksCount={getTasksCountByDate('next5days')}
               next30DaysTasksCount={getTasksCountByDate('next30days')}
               onCardClick={handleDashboardCardClick}
