@@ -52,7 +52,22 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     },
   });
 
-  const { isListening, handleVoiceInput } = useVoiceRecognition({ form });
+  const { 
+    isListening: isSubjectListening, 
+    handleVoiceInput: handleSubjectVoiceInput 
+  } = useVoiceRecognition({ 
+    form,
+    fieldName: 'subject',
+    parseCommand: true,
+  });
+
+  const { 
+    isListening: isDetailsListening, 
+    handleVoiceInput: handleDetailsVoiceInput 
+  } = useVoiceRecognition({
+    form,
+    fieldName: 'details',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -126,8 +141,8 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                 isClosedTask={taskToEdit.status === 'closed'}
               />
             )}
-            <SubjectField isListening={isListening} handleVoiceInput={handleVoiceInput} />
-            <DetailsField />
+            <SubjectField isListening={isSubjectListening} handleVoiceInput={handleSubjectVoiceInput} />
+            <DetailsField isListening={isDetailsListening} handleVoiceInput={handleDetailsVoiceInput} />
             <AssigneeField />
             <DueDateFields />
             <ReminderTimeField />

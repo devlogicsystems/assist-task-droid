@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { parseVoiceCommand } from '@/lib/voiceParser';
@@ -6,9 +7,11 @@ import { TaskFormData } from '@/lib/validations/task';
 
 interface UseVoiceRecognitionProps {
   form: UseFormReturn<TaskFormData>;
+  fieldName: keyof TaskFormData;
+  parseCommand?: boolean;
 }
 
-export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
+export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: UseVoiceRecognitionProps) => {
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
@@ -38,40 +41,42 @@ export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
       setIsListening(false);
       recognitionRef.current = null;
       
-      const finalTranscript = form.getValues('subject');
-      if (finalTranscript) {
-          const parsedData = parseVoiceCommand(finalTranscript);
+      if (parseCommand) {
+        const finalTranscript = form.getValues(fieldName);
+        if (finalTranscript && typeof finalTranscript === 'string') {
+            const parsedData = parseVoiceCommand(finalTranscript);
 
-          console.log('Final Transcript:', finalTranscript);
-          console.log('Parsed Data:', parsedData);
+            console.log('Final Transcript:', finalTranscript);
+            console.log('Parsed Data:', parsedData);
 
-          if (parsedData.subject) {
-            form.setValue('subject', parsedData.subject, { shouldValidate: true });
-          }
-    
-          if (parsedData.assignee) {
-            form.setValue('assignee', parsedData.assignee, { shouldValidate: true });
-          }
-          if (parsedData.dueDate) {
-            form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
-          }
+            if (parsedData.subject) {
+              form.setValue('subject', parsedData.subject, { shouldValidate: true });
+            }
+      
+            if (parsedData.assignee) {
+              form.setValue('assignee', parsedData.assignee, { shouldValidate: true });
+            }
+            if (parsedData.dueDate) {
+              form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
+            }
 
-          if (parsedData.isFullDay) {
-            form.setValue('isFullDay', true, { shouldValidate: true });
-            form.setValue('dueTime', '', { shouldValidate: true });
-          } else if (parsedData.dueTime) {
-            form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
-            form.setValue('isFullDay', false, { shouldValidate: true });
-          }
-          
-          if (parsedData.reminderTime) {
-            form.setValue('reminderTime', parsedData.reminderTime, { shouldValidate: true });
-          }
-          
-          toast({
-            title: "Voice Input Processed",
-            description: "Task details have been populated from your voice command.",
-          });
+            if (parsedData.isFullDay) {
+              form.setValue('isFullDay', true, { shouldValidate: true });
+              form.setValue('dueTime', '', { shouldValidate: true });
+            } else if (parsedData.dueTime) {
+              form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
+              form.setValue('isFullDay', false, { shouldValidate: true });
+            }
+            
+            if (parsedData.reminderTime) {
+              form.setValue('reminderTime', parsedData.reminderTime, { shouldValidate: true });
+            }
+            
+            toast({
+              title: "Voice Input Processed",
+              description: "Task details have been populated from your voice command.",
+            });
+        }
       }
     };
 
@@ -100,7 +105,7 @@ export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
       for (let i = 0; i < event.results.length; ++i) {
         transcript += event.results[i][0].transcript;
       }
-      form.setValue('subject', transcript, { shouldValidate: true });
+      form.setValue(fieldName, transcript, { shouldValidate: true });
     };
 
     recognitionRef.current = recognition;
