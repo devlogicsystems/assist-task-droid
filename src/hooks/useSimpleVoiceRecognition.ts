@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
 interface UseSimpleVoiceRecognitionProps {
@@ -9,8 +9,19 @@ interface UseSimpleVoiceRecognitionProps {
 export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitionProps) => {
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
+  const recognitionRef = useRef<any>(null);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  }, []);
 
   const startListening = useCallback(() => {
+    if (recognitionRef.current) {
+      return;
+    }
+
     if (!('webkitSpeechRecognition' in window)) {
       toast({
         title: "Unsupported Browser",
@@ -21,20 +32,26 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
     }
 
     const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
+      
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        return;
+      }
+
       let description = `An error occurred: ${event.error}.`;
       if (event.error === 'not-allowed') {
         description = "Microphone access was denied. Please enable it in your browser's settings for this site.";
-      } else if (event.error === 'no-speech') {
-        description = "No speech was detected. Please try speaking again.";
       } else if (event.error === 'audio-capture') {
         description = "Audio capture failed. Please check if your microphone is working correctly.";
       } else if (event.error === 'service-not-allowed') {
@@ -48,12 +65,16 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
     };
 
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
+      let transcript = '';
+      for (let i = 0; i < event.results.length; ++i) {
+        transcript += event.results[i][0].transcript;
+      }
       onResult(transcript);
     };
 
+    recognitionRef.current = recognition;
     recognition.start();
-  }, [onResult, toast]);
+  }, [onResult, toast, stopListening]);
 
-  return { isListening, startListening };
+  return { isListening, startListening, stopListening };
 };

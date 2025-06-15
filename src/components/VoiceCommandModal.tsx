@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSimpleVoiceRecognition } from '@/hooks/useSimpleVoiceRecognition';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Mic, Send } from 'lucide-react';
 
@@ -15,7 +15,7 @@ interface VoiceCommandModalProps {
 export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [command, setCommand] = useState('');
 
-  const { isListening, startListening } = useSimpleVoiceRecognition({
+  const { isListening, startListening, stopListening } = useSimpleVoiceRecognition({
     onResult: (transcript) => {
       setCommand(transcript);
     },
@@ -24,8 +24,14 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
   useEffect(() => {
     if (isOpen) {
       startListening();
+    } else {
+      stopListening();
     }
-  }, [isOpen, startListening]);
+    
+    return () => {
+      stopListening();
+    }
+  }, [isOpen, startListening, stopListening]);
   
   const handleSubmit = () => {
     if (command.trim()) {
@@ -43,10 +49,13 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Task with Voice</DialogTitle>
+          <DialogDescription>
+            Speak your command. The system will listen until you close this window or click Create Task.
+          </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <Textarea
-            placeholder="Speak your command... e.g., 'Remind me to call John tomorrow at 2pm'"
+            placeholder="e.g., 'Remind me to call John tomorrow at 2pm'"
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             rows={4}
@@ -54,7 +63,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
           />
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button onClick={startListening} variant="outline" size="icon" className={isListening ? 'bg-red-100' : ''}>
+          <Button onClick={isListening ? stopListening : startListening} variant="outline" size="icon" className={isListening ? 'bg-red-100' : ''}>
             <Mic />
           </Button>
           <div className="flex gap-2">
