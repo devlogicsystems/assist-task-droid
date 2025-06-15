@@ -139,6 +139,9 @@ export const useTaskManager = () => {
 
   const handleCreateTask = (newTaskData: TaskFormData) => {
     const task = mapTaskFormDataToTask(newTaskData);
+    if (task.recurrence) {
+      task.templateStatus = 'active';
+    }
     setTasks(prev => [task, ...prev]);
     toast({
       title: "Task Created",

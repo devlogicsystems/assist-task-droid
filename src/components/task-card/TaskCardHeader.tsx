@@ -17,6 +17,7 @@ interface TaskCardHeaderProps {
   statusColor: string;
   statusIcon: React.ReactNode;
   formattedDateTime: string;
+  isTemplate: boolean;
 }
 
 const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
@@ -30,6 +31,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   statusColor,
   statusIcon,
   formattedDateTime,
+  isTemplate,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between p-4 gap-3">
@@ -41,10 +43,16 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
         <div className="flex-1 min-w-0" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
           <div className="flex items-center justify-between mb-1">
             <h3 className="font-semibold text-primary text-sm break-words mr-2 task-subject">{task.subject}</h3>
-            <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
-              {statusIcon}
-              {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-            </Badge>
+            {isTemplate ? (
+              <Badge className={`${(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'bg-green-500' : 'bg-slate-500'} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0 text-white`}>
+                {(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'Active' : 'Inactive'}
+              </Badge>
+            ) : (
+              <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
+                {statusIcon}
+                {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </Badge>
+            )}
           </div>
           
           <div className="flex flex-col items-start space-y-1 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0 text-xs text-muted-foreground mt-2">
@@ -87,20 +95,31 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
           )}
         </Tooltip>
 
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            onStatusChange();
-          }}
-          size="sm"
-          variant={task.status === 'closed' ? 'secondary' : 'default'}
-          className="text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground"
-          disabled={task.status === 'closed'}
-        >
-          {task.status === 'assigned' && 'Start'}
-          {task.status === 'in-progress' && 'Complete'}
-          {task.status === 'closed' && 'Done'}
-        </Button>
+        {isTemplate ? (
+          <Button
+            onClick={(e) => { e.stopPropagation(); onStatusChange(); }}
+            size="sm"
+            variant={(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'outline' : 'default'}
+            className="text-xs px-3 py-1"
+          >
+            {(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'Deactivate' : 'Activate'}
+          </Button>
+        ) : (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onStatusChange();
+            }}
+            size="sm"
+            variant={task.status === 'closed' ? 'secondary' : 'default'}
+            className="text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+            disabled={task.status === 'closed'}
+          >
+            {task.status === 'assigned' && 'Start'}
+            {task.status === 'in-progress' && 'Complete'}
+            {task.status === 'closed' && 'Done'}
+          </Button>
+        )}
       </div>
     </div>
   );

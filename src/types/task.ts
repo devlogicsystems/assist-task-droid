@@ -1,4 +1,6 @@
+
 export type TaskStatus = 'assigned' | 'in-progress' | 'closed';
+export type TemplateStatus = 'active' | 'inactive';
 
 export interface Task {
   id: string;
@@ -14,6 +16,7 @@ export interface Task {
   url?: string;
   attachments?: TaskAttachment[];
   recurrence?: TaskRecurrence;
+  templateStatus?: TemplateStatus;
   recurrenceTemplateId?: string;
   createdAt?: string;
   updatedAt?: string;

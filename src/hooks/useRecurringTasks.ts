@@ -69,7 +69,7 @@ export const useRecurringTasks = (
   const { toast } = useToast();
 
   useEffect(() => {
-    const recurringTemplates = tasks.filter(t => t.recurrence);
+    const recurringTemplates = tasks.filter(t => t.recurrence && t.templateStatus !== 'inactive');
     if (!recurringTemplates.length) return;
 
     let newTasks: Task[] = [];

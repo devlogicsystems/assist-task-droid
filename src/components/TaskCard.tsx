@@ -21,10 +21,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
     isOverdue,
     isEditable,
   } = useTaskCardLogic(task);
+  
+  const isTemplate = !!task.recurrence;
 
   const handleStatusChange = () => {
-    const nextStatus = getNextStatus(task.status);
-    onUpdate({ ...task, status: nextStatus });
+    if (isTemplate) {
+      const newStatus = (task.templateStatus === 'active' || typeof task.templateStatus === 'undefined') ? 'inactive' : 'active';
+      onUpdate({ ...task, templateStatus: newStatus });
+    } else {
+      const nextStatus = getNextStatus(task.status);
+      onUpdate({ ...task, status: nextStatus });
+    }
   };
   
   const handleEdit = () => {
@@ -66,6 +73,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
         statusColor={getStatusColor(task.status)}
         statusIcon={getStatusIcon(task.status)}
         formattedDateTime={formatDateTime()}
+        isTemplate={isTemplate}
       />
 
       {isExpanded && <TaskCardExpandedContent task={task} onMakeRecurring={handleMakeRecurring} />}
