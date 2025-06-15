@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Task } from '@/types/task';
 import { Clock, FileText } from 'lucide-react';
 
@@ -16,17 +15,6 @@ const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task 
         <div>
           <p className="text-sm text-foreground leading-relaxed">{task.details}</p>
         </div>
-
-        {/* Labels */}
-        {task.labels.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {task.labels.map((label, index) => (
-              <Badge key={index} variant="secondary" className="text-xs px-2 py-1 bg-secondary/20 text-secondary border border-secondary/30">
-                {label}
-              </Badge>
-            ))}
-          </div>
-        )}
 
         {/* Additional Info */}
         <div className="space-y-2 text-xs text-muted-foreground">

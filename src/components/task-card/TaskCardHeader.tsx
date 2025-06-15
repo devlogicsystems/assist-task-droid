@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Calendar, User, ChevronDown, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -80,6 +79,16 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
               </span>
             </div>
           </div>
+          
+          {task.labels && task.labels.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {task.labels.map((label, index) => (
+                <Badge key={index} variant="secondary" className="text-xs px-2 py-0.5 bg-secondary/20 text-secondary border border-secondary/30">
+                  {label}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
