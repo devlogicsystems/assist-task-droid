@@ -75,7 +75,7 @@ export const useRecurringTasks = (
     let newTasks: Task[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const checkEndDate = addDays(today, 5);
+    const targetDueDate = addDays(today, 5);
 
     recurringTemplates.forEach(template => {
       const existingInstances = tasks
@@ -87,32 +87,34 @@ export const useRecurringTasks = (
         : addDays(new Date(template.dueDate || new Date()), -1);
 
       let nextDueDate: Date | null = lastDueDate;
-      for (let i = 0; i < 52; i++) {
+      for (let i = 0; i < 52; i++) { // Safety loop to prevent infinite execution
         if (!template.recurrence) continue;
         
         nextDueDate = getNextOccurrence(template.recurrence, nextDueDate);
         
-        if (!nextDueDate || isBefore(checkEndDate, nextDueDate)) {
+        if (!nextDueDate || isAfter(nextDueDate, targetDueDate)) {
           break;
         }
 
-        const instanceExists = tasks.some(t =>
-          t.recurrenceTemplateId === template.id &&
-          new Date(t.dueDate).toDateString() === nextDueDate?.toDateString()
-        );
+        if (nextDueDate.toDateString() === targetDueDate.toDateString()) {
+          const instanceExists = tasks.some(t =>
+            t.recurrenceTemplateId === template.id &&
+            new Date(t.dueDate).toDateString() === nextDueDate?.toDateString()
+          );
 
-        if (!instanceExists && nextDueDate) {
-          const newTask: Task = {
-            ...template,
-            id: `${template.id}-recur-${nextDueDate.getTime()}`,
-            dueDate: format(nextDueDate, 'yyyy-MM-dd'),
-            status: 'assigned',
-            recurrenceTemplateId: template.id,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          delete newTask.recurrence;
-          newTasks.push(newTask);
+          if (!instanceExists) {
+            const newTask: Task = {
+              ...template,
+              id: `${template.id}-recur-${nextDueDate.getTime()}`,
+              dueDate: format(nextDueDate, 'yyyy-MM-dd'),
+              status: 'assigned',
+              recurrenceTemplateId: template.id,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            delete newTask.recurrence;
+            newTasks.push(newTask);
+          }
         }
       }
     });
