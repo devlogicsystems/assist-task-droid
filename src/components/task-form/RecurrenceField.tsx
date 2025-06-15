@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
-export const RecurrenceField = () => {
+export const RecurrenceField = ({ forceRecurring = false }: { forceRecurring?: boolean }) => {
     const { watch, setValue } = useFormContext();
     const recurrence = watch('recurrence');
     
-    const [isRecurring, setIsRecurring] = useState(!!recurrence);
+    const [isRecurring, setIsRecurring] = useState(forceRecurring || !!recurrence);
     const [type, setType] = useState(recurrence?.type || 'weekly');
     const [weekDay, setWeekDay] = useState(recurrence?.weekDay ?? 1); // Default to Monday
     const [monthDay, setMonthDay] = useState(recurrence?.monthDay ?? 1);
@@ -43,10 +43,12 @@ export const RecurrenceField = () => {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-                <Switch id="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
-                <Label htmlFor="isRecurring">Set as a recurring task</Label>
-            </div>
+            {!forceRecurring && (
+                <div className="flex items-center space-x-2">
+                    <Switch id="isRecurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
+                    <Label htmlFor="isRecurring">Set as a recurring task</Label>
+                </div>
+            )}
             {isRecurring && (
                 <div className="pl-6 space-y-4 border-l-2 border-muted-foreground/20">
                     <Select value={type} onValueChange={setType}>
