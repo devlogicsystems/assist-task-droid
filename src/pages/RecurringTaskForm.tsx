@@ -4,7 +4,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { taskSchema, TaskFormData } from '@/lib/validations/task';
+import { taskFormSchema, TaskFormData } from '@/lib/validations/task';
 
 import { SubjectField } from '@/components/task-form/SubjectField';
 import { DetailsField } from '@/components/task-form/DetailsField';
@@ -24,7 +24,7 @@ const RecurringTaskForm = () => {
   const { toast } = useToast();
 
   const form = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
+    resolver: zodResolver(taskFormSchema),
     defaultValues: {
       subject: '',
       details: '',

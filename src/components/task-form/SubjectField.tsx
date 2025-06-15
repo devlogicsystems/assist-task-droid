@@ -8,8 +8,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { TaskFormData } from '@/lib/validations/task';
 
 interface SubjectFieldProps {
-  isListening: boolean;
-  handleVoiceInput: () => void;
+  isListening?: boolean;
+  handleVoiceInput?: () => void;
 }
 
 export const SubjectField = ({ isListening, handleVoiceInput }: SubjectFieldProps) => {
@@ -25,9 +25,11 @@ export const SubjectField = ({ isListening, handleVoiceInput }: SubjectFieldProp
           <FormControl>
             <div className="flex gap-2">
               <Input {...field} placeholder="Enter task subject" className="flex-1" />
-              <Button type="button" onClick={handleVoiceInput} variant="outline" size="sm" className={isListening ? 'bg-red-100' : ''}>
-                <Mic className="w-4 h-4" />
-              </Button>
+              {handleVoiceInput && (
+                <Button type="button" onClick={handleVoiceInput} variant="outline" size="sm" className={isListening ? 'bg-red-100' : ''}>
+                  <Mic className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </FormControl>
           <FormMessage />
