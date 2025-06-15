@@ -1,19 +1,17 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
-import { Task, TaskStatus } from '@/types/task';
-import { TaskFormData } from '@/lib/validations/task';
-import { mapTaskFormDataToTask } from '@/lib/taskUtils';
+import { Task } from '@/types/task';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import { VoiceCommandModal } from '@/components/VoiceCommandModal';
-import { parseVoiceCommand } from '@/lib/voiceParser';
 import DashboardTab from '@/components/dashboard/DashboardTab';
 import TasksTab from '@/components/tasks/TasksTab';
 import RecurringTab from '@/components/recurring/RecurringTab';
+import { useTaskModals } from '@/hooks/useTaskModals';
 
 const Index = () => {
   const {
@@ -35,48 +33,27 @@ const Index = () => {
   
   const { importFileRef, triggerImport, handleExportTasks, handleImportFileSelect } = useTaskIO(tasks, setTasks);
   
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
+  const {
+    isCreateModalOpen,
+    taskToEdit,
+    isVoiceCommandModalOpen,
+    setIsVoiceCommandModalOpen,
+    handleEditTask,
+    handleTaskFormSubmit,
+    handleModalClose,
+    handleVoiceTaskCreation,
+    handleVoiceCommandSubmit,
+    openCreateTaskModal
+  } = useTaskModals({ handleCreateTask, handleUpdateTask });
+
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [recurringFilter, setRecurringFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const navigate = useNavigate();
 
-  const recurringTaskTemplates = useMemo(() => {
-    let filtered = tasks.filter(t => t.recurrence);
-
-    if (recurringFilter !== 'all') {
-      if (recurringFilter === 'active') {
-        filtered = filtered.filter(t => t.templateStatus === 'active' || typeof t.templateStatus === 'undefined');
-      } else { // inactive
-        filtered = filtered.filter(t => t.templateStatus === 'inactive');
-      }
-    }
-
-    if (searchQuery) {
-        const lowercasedQuery = searchQuery.toLowerCase();
-        filtered = filtered.filter(task =>
-            task.subject.toLowerCase().includes(lowercasedQuery) ||
-            task.assignee.toLowerCase().includes(lowercasedQuery) ||
-            (task.details && task.details.toLowerCase().includes(lowercasedQuery)) ||
-            task.labels.some(label => label.toLowerCase().includes(lowercasedQuery))
-        );
-    }
-    return filtered;
-  }, [tasks, searchQuery, recurringFilter]);
-
-  const handleEditTask = (task: Task) => {
-    setTaskToEdit(task);
-    setIsCreateModalOpen(true);
-  };
-  
   const handleEditRecurringTask = (task: Task) => {
     navigate(`/edit-recurring/${task.id}`);
   };
 
   const handleAddRecurringTask = () => navigate('/create-recurring');
-
-  const triggerImportAndClose = () => triggerImport();
 
   const handleViewCompleted = () => {
     setStatusFilter('closed');
@@ -88,44 +65,6 @@ const Index = () => {
     setStatusFilter('all');
     setSelectedDateFilter(dateFilter);
     setActiveTab('tasks');
-  };
-  
-  const handleTaskFormSubmit = (data: TaskFormData) => {
-    if (taskToEdit) {
-      const updatedTask = mapTaskFormDataToTask(data, taskToEdit);
-      handleUpdateTask(updatedTask);
-    } else {
-      handleCreateTask(data);
-    }
-    setIsCreateModalOpen(false);
-    setTaskToEdit(null);
-  };
-
-  const handleModalClose = () => {
-    setIsCreateModalOpen(false);
-    setTaskToEdit(null);
-  };
-  
-  const handleVoiceTaskCreation = () => {
-    setIsVoiceCommandModalOpen(true);
-  };
-
-  const handleVoiceCommandSubmit = (transcript: string) => {
-    const parsedData = parseVoiceCommand(transcript);
-    const taskData: TaskFormData = {
-        subject: parsedData.subject || transcript,
-        details: '',
-        assignee: parsedData.assignee || '',
-        dueDate: parsedData.dueDate || '',
-        dueTime: parsedData.dueTime || '',
-        isFullDay: !parsedData.dueTime,
-        reminderTime: '',
-        labels: [],
-        url: '',
-        recurrence: undefined,
-    };
-    handleCreateTask(taskData);
-    setIsVoiceCommandModalOpen(false);
   };
 
   return (
@@ -139,8 +78,8 @@ const Index = () => {
       />
       
       <Header
-        onNewTask={() => { setTaskToEdit(null); setIsCreateModalOpen(true); }}
-        onImport={triggerImportAndClose}
+        onNewTask={openCreateTaskModal}
+        onImport={triggerImport}
         onExport={handleExportTasks}
         onViewCompleted={handleViewCompleted}
         onVoiceTask={handleVoiceTaskCreation}
@@ -160,7 +99,7 @@ const Index = () => {
             <DashboardTab
               tasks={tasks}
               pendingTasksCount={getPendingTasksCount()}
-              todayTasksCount={getTasksCountByDate('today')}
+              todayTasksCount={getTasksCountbyDate('today')}
               next5DaysTasksCount={getTasksCountByDate('next5days')}
               next30DaysTasksCount={getTasksCountByDate('next30days')}
               onCardClick={handleDashboardCardClick}
@@ -181,11 +120,9 @@ const Index = () => {
           </TabsContent>
           <TabsContent value="recurring">
             <RecurringTab
-              tasks={recurringTaskTemplates}
+              allTasks={tasks}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              recurringFilter={recurringFilter}
-              setRecurringFilter={setRecurringFilter}
               onUpdate={handleUpdateTask}
               onEdit={handleEditRecurringTask}
               onDelete={handleDeleteTask}
