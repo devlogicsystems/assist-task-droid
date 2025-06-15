@@ -1,23 +1,18 @@
-
 import React, { useState, useMemo } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
 import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 import { mapTaskFormDataToTask } from '@/lib/taskUtils';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import { VoiceCommandModal } from '@/components/VoiceCommandModal';
 import { parseVoiceCommand } from '@/lib/voiceParser';
-import DashboardStats from '@/components/DashboardStats';
-import OverdueAssigneeChart from '@/components/OverdueAssigneeChart';
-import OverdueTrendChart from '@/components/OverdueTrendChart';
-import TaskFilters from '@/components/TaskFilters';
-import TaskList from '@/components/TaskList';
+import DashboardTab from '@/components/dashboard/DashboardTab';
+import TasksTab from '@/components/tasks/TasksTab';
+import RecurringTab from '@/components/recurring/RecurringTab';
 
 const Index = () => {
   const {
@@ -150,60 +145,31 @@ const Index = () => {
             </TabsList>
           </div>
           <TabsContent value="dashboard">
-            <DashboardStats
-              assignedCount={getTasksByStatus('assigned')}
-              inProgressCount={getTasksByStatus('in-progress')}
-              completedCount={getTasksByStatus('closed')}
-              onFilterChange={handleFilterChange}
-              onViewCompleted={handleViewCompleted}
+            <DashboardTab
+              tasks={tasks}
+              getTasksByStatus={getTasksByStatus}
+              handleFilterChange={handleFilterChange}
+              handleViewCompleted={handleViewCompleted}
             />
-            
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <OverdueAssigneeChart tasks={tasks} />
-              </div>
-              <div>
-                <OverdueTrendChart tasks={tasks} />
-              </div>
-            </div>
           </TabsContent>
           <TabsContent value="tasks">
-            <TaskFilters 
+            <TasksTab
+              filteredTasks={filteredTasks}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               selectedDateFilter={selectedDateFilter}
               setSelectedDateFilter={setSelectedDateFilter}
-            />
-
-            <TaskList
-              tasks={filteredTasks}
-              searchQuery={searchQuery}
               onUpdate={handleUpdateTask}
               onEdit={handleEditTask}
             />
           </TabsContent>
           <TabsContent value="recurring">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-              <TaskFilters 
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                statusFilter={'all'}
-                setStatusFilter={() => {}}
-                selectedDateFilter={'all'}
-                setSelectedDateFilter={() => {}}
-              />
-              <Button asChild>
-                <Link to="/create-recurring">
-                  Create New Template
-                </Link>
-              </Button>
-            </div>
-            
-            <TaskList
+            <RecurringTab
               tasks={recurringTaskTemplates}
               searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
               onUpdate={handleUpdateTask}
               onEdit={handleEditRecurringTask}
             />
