@@ -32,22 +32,22 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   formattedDateTime,
 }) => {
   return (
-    <div className="flex items-center justify-between p-4">
-      <div className="flex items-center space-x-3 flex-1 min-w-0">
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10" onClick={onToggleExpand}>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between p-4 gap-3">
+      <div className="flex items-start space-x-3 flex-1 min-w-0 w-full">
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10 mt-1 sm:mt-0" onClick={onToggleExpand}>
           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </Button>
 
         <div className="flex-1 min-w-0" onClick={onToggleExpand} style={{ cursor: 'pointer' }}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-primary text-sm truncate pr-2 task-subject">{task.subject}</h3>
+            <h3 className="font-semibold text-primary text-sm break-words mr-2 task-subject">{task.subject}</h3>
             <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
               {statusIcon}
               {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </Badge>
           </div>
           
-          <div className="flex items-center text-xs text-muted-foreground space-x-4">
+          <div className="flex flex-col items-start space-y-1 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0 text-xs text-muted-foreground mt-2">
             <div className="flex items-center gap-1">
               <User className="w-3 h-3" />
               <span className="truncate">{task.assignee}</span>
@@ -62,7 +62,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 ml-2 shrink-0">
+      <div className="flex items-center gap-2 sm:ml-2 shrink-0 self-end sm:self-auto">
          <Tooltip>
           <TooltipTrigger asChild>
             <div tabIndex={0}>
