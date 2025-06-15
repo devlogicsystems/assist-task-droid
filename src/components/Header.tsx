@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
               </MenubarMenu>
             </Menubar>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-primary-foreground">TaskFlow</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary-foreground">PragmaTasks</h1>
               <p className="text-primary-foreground/80 text-sm mt-1">Organize your work efficiently</p>
             </div>
           </div>
