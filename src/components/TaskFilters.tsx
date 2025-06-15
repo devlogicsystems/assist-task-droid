@@ -34,7 +34,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
         />
       </div>
       <div className="flex gap-2 overflow-x-auto pb-2">
-          <Button onClick={() => setStatusFilter('all')} variant={statusFilter === 'all' && selectedDateFilter === 'all' ? 'default' : 'outline'}>All Active</Button>
+          <Button onClick={() => { setStatusFilter('all'); setSelectedDateFilter('all'); }} variant={statusFilter === 'all' && selectedDateFilter === 'all' ? 'default' : 'outline'}>Pending Tasks</Button>
           {(['today', 'tomorrow', 'next5days', 'next30days'] as DateFilter[]).map((filter) => (
             <Button
               key={filter}

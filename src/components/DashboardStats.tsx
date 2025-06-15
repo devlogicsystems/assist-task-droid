@@ -30,7 +30,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ assignedCount, inProgre
         icon={<User className="w-5 h-5 text-accent" />}
         title="Assigned"
         count={assignedCount}
-        onClick={() => onFilterChange('assigned', 'today')}
+        onClick={() => onFilterChange('assigned', 'all')}
       />
       <StatCard 
         icon={<Clock className="w-5 h-5 text-secondary" />}
