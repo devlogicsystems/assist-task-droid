@@ -1,3 +1,4 @@
+
 import { addDays, format } from 'date-fns';
 
 interface ParsedTaskData {
@@ -6,6 +7,7 @@ interface ParsedTaskData {
   dueTime?: string;
   assignee?: string;
   isFullDay?: boolean;
+  reminderTime?: string;
 }
 
 const formatDate = (date: Date): string => format(date, 'yyyy-MM-dd');
@@ -75,6 +77,17 @@ export const parseVoiceCommand = (command: string): ParsedTaskData => {
     let subject = subjectMatch[1].trim();
     data.subject = subject.charAt(0).toUpperCase() + subject.slice(1);
   }
+
+  // 6. Reminder Time Calculation
+  if (data.isFullDay) {
+    data.reminderTime = '10:00';
+  } else if (data.dueTime) {
+    const [hours, minutes] = data.dueTime.split(':').map(Number);
+    const reminderDate = new Date();
+    reminderDate.setHours(hours, minutes - 10);
+    data.reminderTime = `${String(reminderDate.getHours()).padStart(2, '0')}:${String(reminderDate.getMinutes()).padStart(2, '0')}`;
+  }
+
 
   return data;
 };

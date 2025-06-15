@@ -64,6 +64,10 @@ export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
             form.setValue('isFullDay', false, { shouldValidate: true });
           }
           
+          if (parsedData.reminderTime) {
+            form.setValue('reminderTime', parsedData.reminderTime, { shouldValidate: true });
+          }
+          
           toast({
             title: "Voice Input Processed",
             description: "Task details have been populated from your voice command.",

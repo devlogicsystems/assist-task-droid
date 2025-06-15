@@ -51,7 +51,7 @@ export const useTaskModals = ({ handleCreateTask, handleUpdateTask }: UseTaskMod
       dueDate: parsedData.dueDate || '',
       dueTime: parsedData.dueTime || '',
       isFullDay: parsedData.isFullDay || false,
-      reminderTime: '',
+      reminderTime: parsedData.reminderTime || '',
       labels: [],
       url: '',
       recurrence: undefined,

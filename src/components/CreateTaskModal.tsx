@@ -92,12 +92,12 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   const onValidSubmit = (data: TaskFormData) => {
     let reminderTime = data.reminderTime;
     if (!reminderTime && data.dueTime && !data.isFullDay) {
-      const [hours, minutes] = data.dueTime.split(':');
+      const [hours, minutes] = data.dueTime.split(':').map(Number);
       const dueDateTime = new Date();
-      dueDateTime.setHours(parseInt(hours), parseInt(minutes) - 10);
-      reminderTime = dueDateTime.toTimeString().slice(0, 5);
+      dueDateTime.setHours(hours, minutes - 10);
+      reminderTime = `${String(dueDateTime.getHours()).padStart(2, '0')}:${String(dueDateTime.getMinutes()).padStart(2, '0')}`;
     } else if (!reminderTime && data.isFullDay) {
-      reminderTime = '09:00';
+      reminderTime = '10:00';
     }
 
     onSubmit({ ...data, reminderTime }, isEditing ? currentStatus : undefined);
