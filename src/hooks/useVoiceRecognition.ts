@@ -33,9 +33,19 @@ export const useVoiceRecognition = ({ form }: UseVoiceRecognitionProps) => {
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
+      let description = `An error occurred: ${event.error}.`;
+      if (event.error === 'not-allowed') {
+        description = "Microphone access was denied. Please enable it in your browser's settings for this site.";
+      } else if (event.error === 'no-speech') {
+        description = "No speech was detected. Please try speaking again.";
+      } else if (event.error === 'audio-capture') {
+        description = "Audio capture failed. Please check if your microphone is working correctly.";
+      } else if (event.error === 'service-not-allowed') {
+        description = "Speech recognition service is not allowed. This may be due to security settings or an insecure connection. Please use HTTPS.";
+      }
       toast({
         title: "Voice Input Error",
-        description: `An error occurred: ${event.error}`,
+        description,
         variant: "destructive",
       });
     };
