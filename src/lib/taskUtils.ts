@@ -1,3 +1,4 @@
+
 import { Task, TaskRecurrence } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 
@@ -13,7 +14,9 @@ export function mapTaskFormDataToTask(
     } else if (r.type === 'monthly') {
       recurrence = { type: 'monthly', monthDays: r.monthDays, interval: 1 };
     } else if (r.type === 'yearly') {
-      recurrence = { type: 'yearly', yearDates: r.yearDates, interval: 1 };
+      // Explicitly map to ensure type correctness
+      const yearDates = r.yearDates.map(d => ({ month: d.month, day: d.day }));
+      recurrence = { type: 'yearly', yearDates: yearDates, interval: 1 };
     }
   }
 

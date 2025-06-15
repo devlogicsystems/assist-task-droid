@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { taskFormSchema, TaskFormData } from '@/lib/validations/task';
+import { mapTaskFormDataToTask } from '@/lib/taskUtils';
 
 import { SubjectField } from '@/components/task-form/SubjectField';
 import { DetailsField } from '@/components/task-form/DetailsField';
@@ -19,8 +20,12 @@ import { useToast } from "@/hooks/use-toast";
 
 const RecurringTaskForm = () => {
   const navigate = useNavigate();
-  const { handleCreateTask } = useTaskManager();
+  const { id } = useParams<{ id: string }>();
+  const { tasks, handleCreateTask, handleUpdateTask } = useTaskManager();
   const { toast } = useToast();
+
+  const isEditing = Boolean(id);
+  const taskToEdit = isEditing ? tasks.find(t => t.id === id) : undefined;
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskFormSchema),
@@ -40,6 +45,22 @@ const RecurringTaskForm = () => {
     },
   });
 
+  useEffect(() => {
+    if (isEditing && taskToEdit) {
+      form.reset({
+        subject: taskToEdit.subject,
+        details: taskToEdit.details || '',
+        assignee: taskToEdit.assignee,
+        dueDate: taskToEdit.dueDate,
+        dueTime: taskToEdit.dueTime || '',
+        isFullDay: taskToEdit.isFullDay,
+        labels: taskToEdit.labels,
+        url: taskToEdit.url || '',
+        recurrence: taskToEdit.recurrence || undefined
+      });
+    }
+  }, [isEditing, taskToEdit, form]);
+
   const onSubmit = (data: TaskFormData) => {
     if (!data.recurrence) {
         toast({
@@ -53,7 +74,13 @@ const RecurringTaskForm = () => {
     if (!data.dueDate) {
         data.dueDate = new Date().toISOString().split('T')[0];
     }
-    handleCreateTask(data);
+    
+    if (isEditing && taskToEdit) {
+      const updatedTask = mapTaskFormDataToTask(data, taskToEdit);
+      handleUpdateTask(updatedTask);
+    } else {
+      handleCreateTask(data);
+    }
     navigate('/');
   };
 
@@ -61,9 +88,9 @@ const RecurringTaskForm = () => {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>New Recurring Task Template</CardTitle>
+          <CardTitle>{isEditing ? 'Edit' : 'New'} Recurring Task Template</CardTitle>
           <CardDescription>
-            Create a template for tasks that need to be repeated. Instances will be generated automatically based on these settings.
+            {isEditing ? 'Update the template for this recurring task.' : 'Create a template for tasks that need to be repeated. Instances will be generated automatically based on these settings.'}
           </CardDescription>
         </CardHeader>
         <FormProvider {...form}>
@@ -80,7 +107,7 @@ const RecurringTaskForm = () => {
               <Button type="button" variant="ghost" asChild>
                 <Link to="/">Cancel</Link>
               </Button>
-              <Button type="submit">Create Template</Button>
+              <Button type="submit">{isEditing ? 'Update' : 'Create'} Template</Button>
             </CardFooter>
           </form>
         </FormProvider>

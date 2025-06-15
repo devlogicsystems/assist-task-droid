@@ -1,11 +1,10 @@
-
 import React, { useState, useMemo } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
 import { Task, TaskStatus } from '@/types/task';
 import { TaskFormData } from '@/lib/validations/task';
 import { mapTaskFormDataToTask } from '@/lib/taskUtils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,6 +40,7 @@ const Index = () => {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isVoiceCommandModalOpen, setIsVoiceCommandModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const navigate = useNavigate();
 
   const recurringTaskTemplates = useMemo(() => {
     let filtered = tasks.filter(t => t.recurrence);
@@ -60,6 +60,10 @@ const Index = () => {
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
     setIsCreateModalOpen(true);
+  };
+  
+  const handleEditRecurringTask = (task: Task) => {
+    navigate(`/edit-recurring/${task.id}`);
   };
 
   const triggerImportAndClose = () => triggerImport();
@@ -177,20 +181,27 @@ const Index = () => {
             />
           </TabsContent>
           <TabsContent value="recurring">
-            <TaskFilters 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              selectedDateFilter={selectedDateFilter}
-              setSelectedDateFilter={setSelectedDateFilter}
-            />
-
+            <div className="flex justify-between items-start mb-4">
+              <TaskFilters 
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                statusFilter={'all'}
+                setStatusFilter={() => {}}
+                selectedDateFilter={'all'}
+                setSelectedDateFilter={() => {}}
+              />
+              <Button asChild>
+                <Link to="/create-recurring">
+                  Create New Template
+                </Link>
+              </Button>
+            </div>
+            
             <TaskList
               tasks={recurringTaskTemplates}
               searchQuery={searchQuery}
               onUpdate={handleUpdateTask}
-              onEdit={handleEditTask}
+              onEdit={handleEditRecurringTask}
             />
           </TabsContent>
         </Tabs>

@@ -35,6 +35,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
     setIsExpanded(!isExpanded);
   }
 
+  const handleMakeRecurring = () => {
+    if (task.recurrence) return;
+
+    const basisDate = task.dueDate ? new Date(`${task.dueDate}T00:00:00`) : new Date();
+    if (isNaN(basisDate.getTime())) {
+      basisDate.setTime(new Date().getTime());
+    }
+
+    onUpdate({
+      ...task,
+      recurrence: {
+        type: 'weekly',
+        weekDays: [basisDate.getDay()],
+        interval: 1,
+      },
+    });
+  };
+
   return (
     <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue && task.status !== 'closed' ? 'border-l-4 border-l-destructive' : ''}`}>
       <TaskCardHeader
@@ -50,7 +68,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit }) => {
         formattedDateTime={formatDateTime()}
       />
 
-      {isExpanded && <TaskCardExpandedContent task={task} />}
+      {isExpanded && <TaskCardExpandedContent task={task} onMakeRecurring={handleMakeRecurring} />}
     </div>
   );
 };
