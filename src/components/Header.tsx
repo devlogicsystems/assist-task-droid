@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -100,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
               onClick={onVoiceTask}
               size="icon"
               variant="outline"
-              className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10 border-primary-foreground/20 hidden sm:inline-flex"
+              className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10 border-primary-foreground/20"
             >
               <Mic className="w-4 h-4" />
             </Button>
