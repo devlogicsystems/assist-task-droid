@@ -167,6 +167,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
             className="text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground"
             disabled={task.status === 'closed'}
           >
+            {task.status === 'assigned' && 'Start'}
             {task.status === 'in-progress' && 'Complete'}
             {task.status === 'closed' && 'Done'}
           </Button>
