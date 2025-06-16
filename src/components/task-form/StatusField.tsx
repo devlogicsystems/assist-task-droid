@@ -13,7 +13,6 @@ interface StatusFieldProps {
 
 export const StatusField: React.FC<StatusFieldProps> = ({ value, onChange, disabled, isClosedTask }) => {
   const statuses: { value: TaskStatus; label: string }[] = [
-    { value: 'assigned', label: 'Assigned' },
     { value: 'in-progress', label: 'In Progress' },
     { value: 'closed', label: 'Closed' },
   ];
@@ -32,7 +31,6 @@ export const StatusField: React.FC<StatusFieldProps> = ({ value, onChange, disab
             <SelectItem 
               key={status.value} 
               value={status.value}
-              disabled={isClosedTask && status.value === 'assigned'}
             >
               {status.label}
             </SelectItem>
