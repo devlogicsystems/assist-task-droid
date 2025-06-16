@@ -60,10 +60,13 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
                 {(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'Active' : 'Inactive'}
               </Badge>
             ) : (
-              <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
-                {statusIcon}
-                {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-              </Badge>
+            // Only show badge for closed tasks, and for in-progress tasksAdd commentMore actions
+              (task.status === 'closed'|| task.status === 'in-progress') && (
+                <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
+                  {statusIcon}
+                  {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Badge>
+              )
             )}
           </div>
           
