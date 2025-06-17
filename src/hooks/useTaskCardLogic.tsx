@@ -27,6 +27,8 @@ export const useTaskCardLogic = (task: Task) => {
 
   const getNextStatus = (currentStatus: TaskStatus): TaskStatus => {
     switch (currentStatus) {
+      case 'assigned':
+        return 'in-progress';
       case 'in-progress':
         return 'closed';
       case 'closed':
