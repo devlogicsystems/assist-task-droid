@@ -44,7 +44,7 @@ export function mapTaskFormDataToTask(
   return {
     ...taskData,
     id: Date.now().toString(),
-    status: 'in-progress',
+    status: 'assigned',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
