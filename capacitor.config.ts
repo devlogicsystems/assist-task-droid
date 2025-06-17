@@ -6,8 +6,6 @@ const config: CapacitorConfig = {
   appName: 'ICTasks',
   webDir: 'dist',
   server: {
-    url: 'https://479a32dc-cf91-4f14-827f-c1286d2cd06a.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
     androidScheme: 'https'
   },
   plugins: {
