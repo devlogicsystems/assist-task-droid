@@ -1,27 +1,32 @@
+
 import { Task, TaskStatus } from '@/types/task';
 import { format } from 'date-fns';
-import { PlayCircle, CheckCircle } from 'lucide-react';
+import { User, PlayCircle, CheckCircle } from 'lucide-react';
 
 export const useTaskCardLogic = (task: Task) => {
   const getStatusColor = (status: TaskStatus) => {
     switch (status) {
+      case 'assigned':
+        return 'status-assigned';
       case 'in-progress':
         return 'status-in-progress';
       case 'closed':
         return 'status-closed';
       default:
-        return 'status-in-progress';
+        return 'status-assigned';
     }
   };
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
+      case 'assigned':
+        return <User className="w-3 h-3" />;
       case 'in-progress':
         return <PlayCircle className="w-3 h-3" />;
       case 'closed':
         return <CheckCircle className="w-3 h-3" />;
       default:
-        return <PlayCircle className="w-3 h-3" />;
+        return <User className="w-3 h-3" />;
     }
   };
 
@@ -32,9 +37,9 @@ export const useTaskCardLogic = (task: Task) => {
       case 'in-progress':
         return 'closed';
       case 'closed':
-        return 'in-progress';
+        return 'assigned';
       default:
-        return 'in-progress';
+        return 'assigned';
     }
   };
 

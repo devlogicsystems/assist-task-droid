@@ -32,6 +32,7 @@ export const StatusField: React.FC<StatusFieldProps> = ({ value, onChange, disab
             <SelectItem 
               key={status.value} 
               value={status.value}
+              disabled={isClosedTask && status.value === 'assigned'}
             >
               {status.label}
             </SelectItem>

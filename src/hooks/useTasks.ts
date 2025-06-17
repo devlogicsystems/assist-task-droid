@@ -15,7 +15,7 @@ const sampleTasks: Task[] = [
     dueDate: '2024-06-12', // Note: This date is in the past
     dueTime: '14:30',
     reminderTime: '14:20',
-    status: 'in-progress',
+    status: 'assigned',
     labels: ['High Priority', 'Marketing', 'Q4 Planning'],
     isFullDay: false,
     url: 'https://example.com/proposal.pdf'
@@ -40,7 +40,7 @@ const sampleTasks: Task[] = [
     dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0], // Due in 2 days
     isFullDay: true,
     reminderTime: '09:00',
-    status: 'in-progress',
+    status: 'assigned',
     labels: ['Client Facing', 'Presentation', 'Design', 'Product Launch'],
     url: 'https://meet.google.com/abc-def-ghi'
   },
@@ -52,7 +52,7 @@ const sampleTasks: Task[] = [
     dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], // Due in 7 days
     dueTime: '17:00',
     reminderTime: '16:30',
-    status: 'in-progress',
+    status: 'assigned',
     labels: ['Development', 'API', 'Backend'],
     isFullDay: false
   }
@@ -126,3 +126,4 @@ export const useTasks = () => {
     handleDeleteTask,
   };
 };
+
