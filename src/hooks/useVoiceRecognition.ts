@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { parseVoiceCommand } from '@/lib/voiceParser';
 import { UseFormReturn } from 'react-hook-form';
 import { TaskFormData } from '@/lib/validations/task';
-import { useVoicePermissions } from './useVoicePermissions';
 
 interface UseVoiceRecognitionProps {
   form: UseFormReturn<TaskFormData>;
@@ -16,7 +15,20 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
-  const { checkAndRequestPermission, hasPermission } = useVoicePermissions();
+
+  const requestMicrophonePermission = async (): Promise<boolean> => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return false;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
 
   const handleVoiceInput = async () => {
     // If already listening, stop
@@ -36,8 +48,14 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
     }
 
     // Request permission first
-    const hasAccess = await checkAndRequestPermission();
+    const hasAccess = await requestMicrophonePermission();
     if (!hasAccess) {
+      toast({
+        title: "Voice Input Error",
+        description: "Microphone access denied. Please enable microphone permissions in your device settings.",
+        variant: "destructive",
+        duration: 6000,
+      });
       return;
     }
 
@@ -120,7 +138,7 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
       
       let description = `Speech recognition error: ${event.error}`;
       if (event.error === 'not-allowed') {
-        description = "Microphone access denied. Please tap the address bar and enable microphone permissions.";
+        description = "Microphone access denied. Please enable microphone permissions in your device settings.";
       } else if (event.error === 'audio-capture') {
         description = "Microphone not working. Please check your device's microphone.";
       } else if (event.error === 'network') {
@@ -150,6 +168,6 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
   return { 
     isListening, 
     handleVoiceInput,
-    hasPermission 
+    hasPermission: null // Remove this dependency to simplify
   };
 };

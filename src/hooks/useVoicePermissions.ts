@@ -8,6 +8,8 @@ export const useVoicePermissions = () => {
   const { toast } = useToast();
 
   const checkAndRequestPermission = async (): Promise<boolean> => {
+    if (isCheckingPermission) return false;
+    
     setIsCheckingPermission(true);
     
     try {
@@ -23,7 +25,7 @@ export const useVoicePermissions = () => {
         return false;
       }
 
-      // Directly request microphone access to trigger permission dialog
+      // For mobile/Capacitor apps, request permission immediately
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -32,15 +34,10 @@ export const useVoicePermissions = () => {
         }
       });
       
-      // Permission granted, close the stream
+      // Permission granted, close the stream immediately
       stream.getTracks().forEach(track => track.stop());
       setHasPermission(true);
       setIsCheckingPermission(false);
-      
-      toast({
-        title: "Microphone Access Granted",
-        description: "You can now use voice features.",
-      });
       
       return true;
       
@@ -53,7 +50,7 @@ export const useVoicePermissions = () => {
       let description = "Please enable microphone access to use voice features.";
       
       if (error.name === 'NotAllowedError') {
-        description = "Microphone access was denied. Please:\n\n1. Tap the lock/info icon in your browser's address bar\n2. Enable microphone permissions\n3. Refresh the page and try again";
+        description = "Microphone access was denied. Please:\n\n• Tap the lock/settings icon in your browser's address bar\n• Enable microphone permissions\n• Refresh the page and try again\n\nFor mobile apps: Check your device's app permissions in Settings.";
       } else if (error.name === 'NotFoundError') {
         description = "No microphone found. Please ensure your device has a working microphone.";
       } else if (error.name === 'NotSupportedError') {
@@ -66,7 +63,7 @@ export const useVoicePermissions = () => {
         title,
         description,
         variant: "destructive",
-        duration: 8000, // Show longer for users to read instructions
+        duration: 8000,
       });
       
       return false;
@@ -74,10 +71,9 @@ export const useVoicePermissions = () => {
   };
 
   const openPermissionSettings = () => {
-    // For mobile browsers, show instructions
     toast({
       title: "Enable Microphone Access",
-      description: "Tap the address bar, then tap the microphone icon to enable permissions. Refresh the page after enabling.",
+      description: "Please enable microphone permissions in your device settings or browser, then try again.",
       duration: 10000,
     });
   };

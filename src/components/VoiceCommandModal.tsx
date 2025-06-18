@@ -22,16 +22,25 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
   });
 
   useEffect(() => {
-    if (isOpen) {
-      startListening();
-    } else {
+    // Only start listening when modal opens and clean up when it closes
+    if (isOpen && !isListening) {
+      const timer = setTimeout(() => {
+        startListening();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (!isOpen && isListening) {
       stopListening();
     }
-    
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Cleanup when component unmounts
     return () => {
-      stopListening();
-    }
-  }, [isOpen, startListening, stopListening]);
+      if (isListening) {
+        stopListening();
+      }
+    };
+  }, []);
   
   const handleSubmit = () => {
     if (command.trim()) {
@@ -42,7 +51,16 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
   
   const handleClose = () => {
     setCommand('');
+    stopListening();
     onClose();
+  };
+
+  const handleToggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -64,7 +82,12 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
           />
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button onClick={isListening ? stopListening : startListening} variant="outline" size="icon" className={isListening ? 'bg-red-100' : ''}>
+          <Button 
+            onClick={handleToggleListening} 
+            variant="outline" 
+            size="icon" 
+            className={isListening ? 'bg-red-100 text-red-600' : ''}
+          >
             <Mic />
           </Button>
           <div className="flex gap-2">

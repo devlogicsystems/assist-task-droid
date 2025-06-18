@@ -1,6 +1,5 @@
 
 import { useState, useRef, useCallback } from 'react';
-import { useVoicePermissions } from './useVoicePermissions';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseSimpleVoiceRecognitionProps {
@@ -10,8 +9,38 @@ interface UseSimpleVoiceRecognitionProps {
 export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitionProps) => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const { checkAndRequestPermission } = useVoicePermissions();
   const { toast } = useToast();
+
+  const requestPermissionAndStart = useCallback(async () => {
+    try {
+      // Request microphone permission first
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast({
+          title: "Voice Input Not Supported",
+          description: "Speech recognition is not supported on this browser.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (error: any) {
+      let description = "Unable to access microphone. Please check permissions.";
+      if (error.name === 'NotAllowedError') {
+        description = "Microphone access denied. Please enable microphone permissions in your device settings.";
+      }
+      
+      toast({
+        title: "Voice Input Error",
+        description,
+        variant: "destructive",
+        duration: 6000,
+      });
+      return false;
+    }
+  }, [toast]);
 
   const startListening = useCallback(async () => {
     if (recognitionRef.current) return;
@@ -27,7 +56,7 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
     }
 
     // Request permission first
-    const hasAccess = await checkAndRequestPermission();
+    const hasAccess = await requestPermissionAndStart();
     if (!hasAccess) {
       return;
     }
@@ -59,7 +88,7 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
       
       let description = "Unable to access microphone. Please check permissions.";
       if (event.error === 'not-allowed') {
-        description = "Microphone access denied. Please tap the address bar and enable microphone permissions.";
+        description = "Microphone access denied. Please enable microphone permissions in your device settings.";
       }
       
       toast({
@@ -80,7 +109,7 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [checkAndRequestPermission, onResult, toast]);
+  }, [requestPermissionAndStart, onResult, toast]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
