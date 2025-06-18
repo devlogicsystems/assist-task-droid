@@ -13,11 +13,23 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
 
   const requestPermissionAndStart = useCallback(async () => {
     try {
-      // Request microphone permission first
+      // Check if we're in a Capacitor app (mobile)
+      const isCapacitor = !!(window as any).Capacitor;
+      
+      if (isCapacitor) {
+        // For Capacitor apps, the permissions should be handled by the native layer
+        toast({
+          title: "Requesting Microphone Access",
+          description: "Please allow microphone access when prompted by your device.",
+          duration: 3000,
+        });
+      }
+
+      // Request microphone permission
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         toast({
           title: "Voice Input Not Supported",
-          description: "Speech recognition is not supported on this browser.",
+          description: "Speech recognition is not supported on this device.",
           variant: "destructive",
         });
         return false;
@@ -27,16 +39,25 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
       stream.getTracks().forEach(track => track.stop());
       return true;
     } catch (error: any) {
-      let description = "Unable to access microphone. Please check permissions.";
+      console.error('Microphone permission error:', error);
+      
+      let description = "Unable to access microphone.";
       if (error.name === 'NotAllowedError') {
-        description = "Microphone access denied. Please enable microphone permissions in your device settings.";
+        const isCapacitor = !!(window as any).Capacitor;
+        if (isCapacitor) {
+          description = "Microphone access denied. Please:\n\n1. Go to your device Settings\n2. Find ICTasks app\n3. Enable Microphone permission\n4. Restart the app";
+        } else {
+          description = "Microphone access denied. Please enable microphone permissions in your browser settings.";
+        }
+      } else if (error.name === 'NotFoundError') {
+        description = "No microphone found on this device.";
       }
       
       toast({
         title: "Voice Input Error",
         description,
         variant: "destructive",
-        duration: 6000,
+        duration: 8000,
       });
       return false;
     }
@@ -86,16 +107,21 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
         return;
       }
       
-      let description = "Unable to access microphone. Please check permissions.";
+      let description = "Speech recognition error occurred.";
       if (event.error === 'not-allowed') {
-        description = "Microphone access denied. Please enable microphone permissions in your device settings.";
+        const isCapacitor = !!(window as any).Capacitor;
+        if (isCapacitor) {
+          description = "Microphone access denied. Please enable microphone permission for ICTasks in your device settings and restart the app.";
+        } else {
+          description = "Microphone access denied. Please enable microphone permissions in your browser settings.";
+        }
       }
       
       toast({
         title: "Voice Input Error",
         description,
         variant: "destructive",
-        duration: 6000,
+        duration: 8000,
       });
     };
 
