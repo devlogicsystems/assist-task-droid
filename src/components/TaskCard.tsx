@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Task } from '@/types/task';
 import { useTaskCardLogic } from '@/hooks/useTaskCardLogic';
@@ -26,7 +27,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit, onDelete })
 
   const handleStatusChange = () => {
     if (isTemplate) {
-      const newStatus = (task.templateStatus === 'active' || typeof task.templateStatus === 'undefined') ? 'inactive' : 'active';
+      const newStatus = (task.templateStatus === 'active' || typeof task.templateStatus === 'undefined') ?         'inactive' : 'active';
       onUpdate({ ...task, templateStatus: newStatus });
     } else {
       const nextStatus = getNextStatus(task.status);
@@ -49,7 +50,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit, onDelete })
   };
 
   return (
-    <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue && task.status !== 'closed' ? 'border-l-4 border-l-destructive' : ''}`}>
+    <div className={`list-item ${isExpanded ? 'list-item-expanded' : ''} ${isOverdue && task.status !== 'closed' ? 'border-l-4 border-l-destructive' : ''} mx-1 sm:mx-0`}>
       <TaskCardHeader
         task={task}
         isExpanded={isExpanded}
@@ -65,7 +66,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onEdit, onDelete })
         isTemplate={isTemplate}
       />
 
-      {isExpanded && <TaskCardExpandedContent task={task} />}
+      {isExpanded && <TaskCardExpandedContent task={task} onEdit={handleEdit} />}
     </div>
   );
 };

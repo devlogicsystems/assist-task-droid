@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskIO } from '@/hooks/useTaskIO';
@@ -11,6 +12,8 @@ import DashboardTab from '@/components/dashboard/DashboardTab';
 import TasksTab from '@/components/tasks/TasksTab';
 import RecurringTab from '@/components/recurring/RecurringTab';
 import { useTaskModals } from '@/hooks/useTaskModals';
+import { useTaskReminders } from '@/hooks/useTaskReminders';
+import TaskReminderModal from '@/components/TaskReminderModal';
 
 const Index = () => {
   const {
@@ -44,6 +47,13 @@ const Index = () => {
     handleVoiceCommandSubmit,
     openCreateTaskModal
   } = useTaskModals({ handleCreateTask, handleUpdateTask });
+
+  const {
+    activeReminderTask,
+    setActiveReminderTask,
+    handleSnooze,
+    handleActionTaken
+  } = useTaskReminders(tasks, handleUpdateTask);
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
@@ -85,7 +95,7 @@ const Index = () => {
         onAddRecurringTask={handleAddRecurringTask}
       />
 
-      <div className="relative p-6 pb-8 -mt-8">
+      <div className="relative p-3 sm:p-6 pb-8 -mt-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex justify-center">
             <TabsList>
@@ -102,6 +112,8 @@ const Index = () => {
               next5DaysTasksCount={getTasksCountByDate('next5days')}
               next30DaysTasksCount={getTasksCountByDate('next30days')}
               onCardClick={handleDashboardCardClick}
+              onTaskUpdate={handleUpdateTask}
+              onTaskEdit={handleEditTask}
             />
           </TabsContent>
           <TabsContent value="tasks">
@@ -141,6 +153,14 @@ const Index = () => {
         isOpen={isVoiceCommandModalOpen}
         onClose={() => setIsVoiceCommandModalOpen(false)}
         onSubmit={handleVoiceCommandSubmit}
+      />
+
+      <TaskReminderModal
+        task={activeReminderTask}
+        isOpen={!!activeReminderTask}
+        onClose={() => setActiveReminderTask(null)}
+        onSnooze={handleSnooze}
+        onActionTaken={handleActionTaken}
       />
     </div>
   );

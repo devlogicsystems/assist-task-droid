@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { Task } from '@/types/task';
-import { Clock, FileText } from 'lucide-react';
+import { Clock, FileText, Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TaskCardExpandedContentProps {
   task: Task;
+  onEdit?: () => void;
 }
 
-const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task }) => {
+const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task, onEdit }) => {
   return (
-    <div className="px-4 pb-4 border-t border-border/20 animate-expand">
+    <div className="px-2 sm:px-4 pb-3 sm:pb-4 border-t border-border/20 animate-expand">
       <div className="pt-3 space-y-3">
         {/* Task Details */}
         <div>
@@ -38,7 +40,24 @@ const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task 
             </div>
           )}
         </div>
-        
+
+        {/* Mobile Edit Button */}
+        {onEdit && (
+          <div className="sm:hidden pt-2">
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              variant="outline"
+              size="sm"
+              className="w-full flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Task Details
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, User, ChevronDown, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,8 +47,8 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
   isTemplate,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between p-4 gap-3">
-      <div className="flex items-start space-x-3 flex-1 min-w-0 w-full">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between p-2 sm:p-4 gap-2 sm:gap-3">
+      <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0 w-full">
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0 text-accent hover:bg-accent/10 mt-1 sm:mt-0" onClick={onToggleExpand}>
           {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </Button>
@@ -56,13 +57,13 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
           <div className="flex items-center justify-between mb-1">
             <h3 className="font-semibold text-primary text-sm break-words mr-2 task-subject">{task.subject}</h3>
             {isTemplate ? (
-              <Badge className={`${(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'bg-green-500' : 'bg-slate-500'} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0 text-white`}>
+              <Badge className={`${(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'bg-green-500' : 'bg-slate-500'} flex items-center gap-1 px-1.5 py-0.5 text-xs shrink-0 text-white`}>
                 {(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'Active' : 'Inactive'}
               </Badge>
             ) : (
               // Only show badge if status is not 'assigned'
               task.status !== 'assigned' && (
-                <Badge className={`${statusColor} flex items-center gap-1 px-2 py-0.5 text-xs shrink-0`}>
+                <Badge className={`${statusColor} flex items-center gap-1 px-1.5 py-0.5 text-xs shrink-0`}>
                   {statusIcon}
                   {task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Badge>
@@ -86,7 +87,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
           {task.labels && task.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {task.labels.map((label, index) => (
-                <Badge key={index} variant="secondary" className="text-xs px-2 py-0.5 bg-accent/20 text-accent border border-accent/30">
+                <Badge key={index} variant="secondary" className="text-xs px-1.5 py-0.5 bg-accent/20 text-accent border border-accent/30">
                   {label}
                 </Badge>
               ))}
@@ -95,21 +96,21 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:ml-2 shrink-0 self-end sm:self-auto">
+      <div className="flex items-center gap-1 sm:gap-2 sm:ml-2 shrink-0 self-end sm:self-auto">
          <Tooltip>
           <TooltipTrigger asChild>
             <div tabIndex={0}>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-8 w-8 text-accent hover:bg-accent/10"
+                className="h-7 w-7 sm:h-8 sm:w-8 text-accent hover:bg-accent/10"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit();
                 }}
                 disabled={!isEditable}
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </TooltipTrigger>
@@ -126,10 +127,10 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
               <Button
                 size="icon"
                 variant="destructive"
-                className="h-8 w-8"
+                className="h-7 w-7 sm:h-8 sm:w-8"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -152,7 +153,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
             onClick={(e) => { e.stopPropagation(); onStatusChange(); }}
             size="sm"
             variant={(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'outline' : 'default'}
-            className="text-xs px-3 py-1"
+            className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3"
           >
             {(task.templateStatus === 'active' || task.templateStatus === undefined) ? 'Deactivate' : 'Activate'}
           </Button>
@@ -164,7 +165,7 @@ const TaskCardHeader: React.FC<TaskCardHeaderProps> = ({
             }}
             size="sm"
             variant={task.status === 'closed' ? 'secondary' : 'default'}
-            className="text-xs px-3 py-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="text-xs px-2 py-1 h-7 sm:h-8 sm:px-3 bg-accent hover:bg-accent/90 text-accent-foreground"
             disabled={task.status === 'closed'}
           >
             {task.status === 'assigned' && 'Start'}

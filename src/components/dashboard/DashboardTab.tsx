@@ -2,8 +2,7 @@
 import React from 'react';
 import { Task } from '@/types/task';
 import DashboardStats from '@/components/DashboardStats';
-import OverdueAssigneeChart from '@/components/OverdueAssigneeChart';
-import OverdueTrendChart from '@/components/OverdueTrendChart';
+import OverdueAssigneeList from '@/components/OverdueAssigneeList';
 
 interface DashboardTabProps {
   tasks: Task[];
@@ -12,6 +11,8 @@ interface DashboardTabProps {
   next5DaysTasksCount: number;
   next30DaysTasksCount: number;
   onCardClick: (date: 'all' | 'today' | 'next5days' | 'next30days') => void;
+  onTaskUpdate: (task: Task) => void;
+  onTaskEdit: (task: Task) => void;
 }
 
 const DashboardTab: React.FC<DashboardTabProps> = ({
@@ -21,6 +22,8 @@ const DashboardTab: React.FC<DashboardTabProps> = ({
   next5DaysTasksCount,
   next30DaysTasksCount,
   onCardClick,
+  onTaskUpdate,
+  onTaskEdit,
 }) => {
   return (
     <>
@@ -32,13 +35,12 @@ const DashboardTab: React.FC<DashboardTabProps> = ({
         onCardClick={onCardClick}
       />
       
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <OverdueAssigneeChart tasks={tasks} />
-        </div>
-        <div>
-          <OverdueTrendChart tasks={tasks} />
-        </div>
+      <div className="mt-6">
+        <OverdueAssigneeList 
+          tasks={tasks} 
+          onTaskUpdate={onTaskUpdate}
+          onTaskEdit={onTaskEdit}
+        />
       </div>
     </>
   );

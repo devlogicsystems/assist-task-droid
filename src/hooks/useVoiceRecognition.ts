@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { parseVoiceCommand } from '@/lib/voiceParser';
 import { UseFormReturn } from 'react-hook-form';
 import { TaskFormData } from '@/lib/validations/task';
+import { useVoicePermissions } from './useVoicePermissions';
 
 interface UseVoiceRecognitionProps {
   form: UseFormReturn<TaskFormData>;
@@ -15,23 +16,32 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
+  const { checkAndRequestPermission } = useVoicePermissions();
 
-  const handleVoiceInput = () => {
+  const handleVoiceInput = async () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       return;
     }
 
-    if (!('webkitSpeechRecognition' in window)) {
+    // Check and request permission first
+    const hasPermission = await checkAndRequestPermission();
+    if (!hasPermission) {
+      return;
+    }
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
-        title: "Unsupported Browser",
-        description: "Speech recognition is not supported in this browser.",
+        title: "Unsupported Feature",
+        description: "Speech recognition is not supported on this device.",
         variant: "destructive",
       });
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
@@ -82,17 +92,22 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
-       if (event.error === 'no-speech' || event.error === 'aborted') {
+      setIsListening(false);
+      recognitionRef.current = null;
+      
+      if (event.error === 'no-speech' || event.error === 'aborted') {
         return;
       }
+      
       let description = `An error occurred: ${event.error}.`;
       if (event.error === 'not-allowed') {
-        description = "Microphone access was denied. Please enable it in your browser's settings for this site.";
+        description = "Microphone access was denied. Please enable microphone permissions in your device settings.";
       } else if (event.error === 'audio-capture') {
         description = "Audio capture failed. Please check if your microphone is working correctly.";
       } else if (event.error === 'service-not-allowed') {
-        description = "Speech recognition service is not allowed. This may be due to security settings or an insecure connection. Please use HTTPS.";
+        description = "Speech recognition service is not available. Please check your internet connection.";
       }
+      
       toast({
         title: "Voice Input Error",
         description,
