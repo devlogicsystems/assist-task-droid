@@ -1,6 +1,7 @@
 
-import { useState, useCallback, useRef } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { useState, useRef, useCallback } from 'react';
+import { useVoicePermissions } from './useVoicePermissions';
+import { useToast } from '@/hooks/use-toast';
 
 interface UseSimpleVoiceRecognitionProps {
   onResult: (transcript: string) => void;
@@ -8,35 +9,40 @@ interface UseSimpleVoiceRecognitionProps {
 
 export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitionProps) => {
   const [isListening, setIsListening] = useState(false);
-  const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
+  const { checkAndRequestPermission } = useVoicePermissions();
+  const { toast } = useToast();
 
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-  }, []);
+  const startListening = useCallback(async () => {
+    if (recognitionRef.current) return;
 
-  const startListening = useCallback(() => {
-    if (recognitionRef.current) {
-      return;
-    }
-
-    if (!('webkitSpeechRecognition' in window)) {
+    // Check for speech recognition support
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
-        title: "Unsupported Browser",
-        description: "Speech recognition is not supported in this browser.",
+        title: "Voice Input Not Supported",
+        description: "Speech recognition is not supported on this browser.",
         variant: "destructive",
       });
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
+    // Request permission first
+    const hasAccess = await checkAndRequestPermission();
+    if (!hasAccess) {
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onstart = () => setIsListening(true);
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
     recognition.onend = () => {
       setIsListening(false);
       recognitionRef.current = null;
@@ -44,23 +50,23 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
+      setIsListening(false);
+      recognitionRef.current = null;
       
       if (event.error === 'no-speech' || event.error === 'aborted') {
         return;
       }
-
-      let description = `An error occurred: ${event.error}.`;
+      
+      let description = "Unable to access microphone. Please check permissions.";
       if (event.error === 'not-allowed') {
-        description = "Microphone access was denied. Please enable it in your browser's settings for this site.";
-      } else if (event.error === 'audio-capture') {
-        description = "Audio capture failed. Please check if your microphone is working correctly.";
-      } else if (event.error === 'service-not-allowed') {
-        description = "Speech recognition service is not allowed. This may be due to security settings or an insecure connection. Please use HTTPS.";
+        description = "Microphone access denied. Please tap the address bar and enable microphone permissions.";
       }
+      
       toast({
         title: "Voice Input Error",
         description,
         variant: "destructive",
+        duration: 6000,
       });
     };
 
@@ -74,7 +80,17 @@ export const useSimpleVoiceRecognition = ({ onResult }: UseSimpleVoiceRecognitio
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [onResult, toast, stopListening]);
+  }, [checkAndRequestPermission, onResult, toast]);
 
-  return { isListening, startListening, stopListening };
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  }, []);
+
+  return {
+    isListening,
+    startListening,
+    stopListening
+  };
 };

@@ -11,33 +11,37 @@ export const useVoicePermissions = () => {
     setIsCheckingPermission(true);
     
     try {
-      // For Capacitor/mobile apps, we need to check navigator.permissions
-      if (navigator.permissions) {
-        const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-        
-        if (permissionStatus.state === 'granted') {
-          setHasPermission(true);
-          setIsCheckingPermission(false);
-          return true;
-        } else if (permissionStatus.state === 'denied') {
-          setHasPermission(false);
-          setIsCheckingPermission(false);
-          toast({
-            title: "Microphone Permission Denied",
-            description: "Please enable microphone access in your device settings to use voice features.",
-            variant: "destructive",
-          });
-          return false;
-        }
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setHasPermission(false);
+        setIsCheckingPermission(false);
+        toast({
+          title: "Voice Input Not Supported",
+          description: "Your device or browser doesn't support voice input.",
+          variant: "destructive",
+        });
+        return false;
       }
 
-      // Try to get media stream to trigger permission request
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Directly request microphone access to trigger permission dialog
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
       
       // Permission granted, close the stream
       stream.getTracks().forEach(track => track.stop());
       setHasPermission(true);
       setIsCheckingPermission(false);
+      
+      toast({
+        title: "Microphone Access Granted",
+        description: "You can now use voice features.",
+      });
+      
       return true;
       
     } catch (error: any) {
@@ -45,35 +49,53 @@ export const useVoicePermissions = () => {
       setHasPermission(false);
       setIsCheckingPermission(false);
       
-      let description = "Unable to access microphone. Please check your device settings.";
+      let title = "Microphone Access Required";
+      let description = "Please enable microphone access to use voice features.";
       
       if (error.name === 'NotAllowedError') {
-        description = "Microphone access was denied. Please enable it in your device settings and try again.";
+        description = "Microphone access was denied. Please:\n\n1. Tap the lock/info icon in your browser's address bar\n2. Enable microphone permissions\n3. Refresh the page and try again";
       } else if (error.name === 'NotFoundError') {
         description = "No microphone found. Please ensure your device has a working microphone.";
       } else if (error.name === 'NotSupportedError') {
         description = "Voice input is not supported on this device or browser.";
+      } else if (error.name === 'SecurityError') {
+        description = "Microphone access blocked by security policy. Please check your browser settings.";
       }
       
       toast({
-        title: "Voice Input Error",
+        title,
         description,
         variant: "destructive",
+        duration: 8000, // Show longer for users to read instructions
       });
       
       return false;
     }
   };
 
+  const openPermissionSettings = () => {
+    // For mobile browsers, show instructions
+    toast({
+      title: "Enable Microphone Access",
+      description: "Tap the address bar, then tap the microphone icon to enable permissions. Refresh the page after enabling.",
+      duration: 10000,
+    });
+  };
+
   useEffect(() => {
-    // Check initial permission state
-    if (navigator.permissions) {
+    // Check initial permission state without requesting
+    if (navigator.permissions && 'query' in navigator.permissions) {
       navigator.permissions.query({ name: 'microphone' as PermissionName })
         .then(result => {
           setHasPermission(result.state === 'granted');
+          
+          // Listen for permission changes
+          result.onchange = () => {
+            setHasPermission(result.state === 'granted');
+          };
         })
         .catch(() => {
-          // Permissions API not fully supported, will check on first use
+          // Permissions API not supported, will check on first use
           setHasPermission(null);
         });
     }
@@ -82,6 +104,7 @@ export const useVoicePermissions = () => {
   return {
     hasPermission,
     isCheckingPermission,
-    checkAndRequestPermission
+    checkAndRequestPermission,
+    openPermissionSettings
   };
 };

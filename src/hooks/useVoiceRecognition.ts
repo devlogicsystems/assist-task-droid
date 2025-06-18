@@ -16,26 +16,28 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognitionRef = useRef<any>(null);
-  const { checkAndRequestPermission } = useVoicePermissions();
+  const { checkAndRequestPermission, hasPermission } = useVoicePermissions();
 
   const handleVoiceInput = async () => {
+    // If already listening, stop
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       return;
     }
 
-    // Check and request permission first
-    const hasPermission = await checkAndRequestPermission();
-    if (!hasPermission) {
+    // Check for speech recognition support
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast({
+        title: "Voice Input Not Supported",
+        description: "Speech recognition is not supported on this browser.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast({
-        title: "Unsupported Feature",
-        description: "Speech recognition is not supported on this device.",
-        variant: "destructive",
-      });
+    // Request permission first
+    const hasAccess = await checkAndRequestPermission();
+    if (!hasAccess) {
       return;
     }
 
@@ -46,7 +48,15 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onstart = () => setIsListening(true);
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast({
+        title: "Listening...",
+        description: "Speak now. Tap the microphone again to stop.",
+        duration: 2000,
+      });
+    };
+
     recognition.onend = () => {
       setIsListening(false);
       recognitionRef.current = null;
@@ -54,38 +64,38 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
       if (parseCommand) {
         const finalTranscript = form.getValues(fieldName);
         if (finalTranscript && typeof finalTranscript === 'string') {
-            const parsedData = parseVoiceCommand(finalTranscript);
+          const parsedData = parseVoiceCommand(finalTranscript);
 
-            console.log('Final Transcript:', finalTranscript);
-            console.log('Parsed Data:', parsedData);
+          console.log('Final Transcript:', finalTranscript);
+          console.log('Parsed Data:', parsedData);
 
-            if (parsedData.subject) {
-              form.setValue('subject', parsedData.subject, { shouldValidate: true });
-            }
-      
-            if (parsedData.assignee) {
-              form.setValue('assignee', parsedData.assignee, { shouldValidate: true });
-            }
-            if (parsedData.dueDate) {
-              form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
-            }
+          if (parsedData.subject) {
+            form.setValue('subject', parsedData.subject, { shouldValidate: true });
+          }
+    
+          if (parsedData.assignee) {
+            form.setValue('assignee', parsedData.assignee, { shouldValidate: true });
+          }
+          if (parsedData.dueDate) {
+            form.setValue('dueDate', parsedData.dueDate, { shouldValidate: true });
+          }
 
-            if (parsedData.isFullDay) {
-              form.setValue('isFullDay', true, { shouldValidate: true });
-              form.setValue('dueTime', '', { shouldValidate: true });
-            } else if (parsedData.dueTime) {
-              form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
-              form.setValue('isFullDay', false, { shouldValidate: true });
-            }
-            
-            if (parsedData.reminderTime) {
-              form.setValue('reminderTime', parsedData.reminderTime, { shouldValidate: true });
-            }
-            
-            toast({
-              title: "Voice Input Processed",
-              description: "Task details have been populated from your voice command.",
-            });
+          if (parsedData.isFullDay) {
+            form.setValue('isFullDay', true, { shouldValidate: true });
+            form.setValue('dueTime', '', { shouldValidate: true });
+          } else if (parsedData.dueTime) {
+            form.setValue('dueTime', parsedData.dueTime, { shouldValidate: true });
+            form.setValue('isFullDay', false, { shouldValidate: true });
+          }
+          
+          if (parsedData.reminderTime) {
+            form.setValue('reminderTime', parsedData.reminderTime, { shouldValidate: true });
+          }
+          
+          toast({
+            title: "Voice Input Processed",
+            description: "Task details have been populated from your voice command.",
+          });
         }
       }
     };
@@ -95,23 +105,33 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
       setIsListening(false);
       recognitionRef.current = null;
       
-      if (event.error === 'no-speech' || event.error === 'aborted') {
+      if (event.error === 'no-speech') {
+        toast({
+          title: "No Speech Detected",
+          description: "Please try speaking again.",
+          variant: "destructive",
+        });
         return;
       }
       
-      let description = `An error occurred: ${event.error}.`;
+      if (event.error === 'aborted') {
+        return; // User stopped manually
+      }
+      
+      let description = `Speech recognition error: ${event.error}`;
       if (event.error === 'not-allowed') {
-        description = "Microphone access was denied. Please enable microphone permissions in your device settings.";
+        description = "Microphone access denied. Please tap the address bar and enable microphone permissions.";
       } else if (event.error === 'audio-capture') {
-        description = "Audio capture failed. Please check if your microphone is working correctly.";
-      } else if (event.error === 'service-not-allowed') {
-        description = "Speech recognition service is not available. Please check your internet connection.";
+        description = "Microphone not working. Please check your device's microphone.";
+      } else if (event.error === 'network') {
+        description = "Network error. Please check your internet connection.";
       }
       
       toast({
         title: "Voice Input Error",
         description,
         variant: "destructive",
+        duration: 6000,
       });
     };
 
@@ -127,5 +147,9 @@ export const useVoiceRecognition = ({ form, fieldName, parseCommand = false }: U
     recognition.start();
   };
 
-  return { isListening, handleVoiceInput };
+  return { 
+    isListening, 
+    handleVoiceInput,
+    hasPermission 
+  };
 };
