@@ -141,8 +141,8 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                 isClosedTask={taskToEdit.status === 'closed'}
               />
             )}
-            <SubjectField />
-            <DetailsField />
+            <SubjectField isListening={isSubjectListening} handleVoiceInput={handleSubjectVoiceInput} />
+            <DetailsField isListening={isDetailsListening} handleVoiceInput={handleDetailsVoiceInput} />
             <AssigneeField />
             <DueDateFields />
             <ReminderTimeField />

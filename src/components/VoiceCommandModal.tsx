@@ -1,6 +1,6 @@
 
-import React, { useState, useRef } from 'react';
-import { useIntelligentVoiceInput } from '@/hooks/useIntelligentVoiceInput';
+import React, { useState, useEffect } from 'react';
+import { useSimpleVoiceRecognition } from '@/hooks/useSimpleVoiceRecognition';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,14 +14,33 @@ interface VoiceCommandModalProps {
 
 export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [command, setCommand] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { isListening, requestSystemVTT } = useIntelligentVoiceInput({
+  const { isListening, startListening, stopListening } = useSimpleVoiceRecognition({
     onResult: (transcript) => {
       setCommand(transcript);
     },
-    inputRef: textareaRef,
   });
+
+  useEffect(() => {
+    // Only start listening when modal opens and clean up when it closes
+    if (isOpen && !isListening) {
+      const timer = setTimeout(() => {
+        startListening();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (!isOpen && isListening) {
+      stopListening();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Cleanup when component unmounts
+    return () => {
+      if (isListening) {
+        stopListening();
+      }
+    };
+  }, []);
   
   const handleSubmit = () => {
     if (command.trim()) {
@@ -32,7 +51,16 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
   
   const handleClose = () => {
     setCommand('');
+    stopListening();
     onClose();
+  };
+
+  const handleToggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -41,12 +69,11 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
         <DialogHeader>
           <DialogTitle>Create Task with Voice</DialogTitle>
           <DialogDescription>
-            Tap the microphone to use your device's voice input, or type your command directly.
+            Speak your command. The system will listen until you close this window or click Create Task.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <Textarea
-            ref={textareaRef}
             placeholder="e.g., 'Remind me to call John tomorrow at 2pm'"
             value={command}
             onChange={(e) => setCommand(e.target.value)}
@@ -56,11 +83,10 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
           <Button 
-            onClick={requestSystemVTT} 
+            onClick={handleToggleListening} 
             variant="outline" 
             size="icon" 
             className={isListening ? 'bg-red-100 text-red-600' : ''}
-            disabled={isListening}
           >
             <Mic />
           </Button>
