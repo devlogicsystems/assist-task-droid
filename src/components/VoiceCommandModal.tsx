@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Mic, Send } from 'lucide-react';
+import { useAndroidDetection } from '@/hooks/useAndroidDetection';
 
 interface VoiceCommandModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface VoiceCommandModalProps {
 
 export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [command, setCommand] = useState('');
+  const isAndroid = useAndroidDetection();
 
   const { isListening, startListening, stopListening } = useSimpleVoiceRecognition({
     onResult: (transcript) => {
@@ -23,7 +25,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
 
   useEffect(() => {
     // Only start listening when modal opens and clean up when it closes
-    if (isOpen && !isListening) {
+    if (isOpen && !isListening && !isAndroid) {
       const timer = setTimeout(() => {
         startListening();
       }, 100);
@@ -31,7 +33,7 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
     } else if (!isOpen && isListening) {
       stopListening();
     }
-  }, [isOpen]);
+  }, [isOpen, isAndroid]);
 
   useEffect(() => {
     // Cleanup when component unmounts
@@ -69,7 +71,10 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
         <DialogHeader>
           <DialogTitle>Create Task with Voice</DialogTitle>
           <DialogDescription>
-            Speak your command. The system will listen until you close this window or click Create Task.
+            {isAndroid 
+              ? "Type your command or use your keyboard's voice input feature."
+              : "Speak your command. The system will listen until you close this window or click Create Task."
+            }
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -82,14 +87,16 @@ export const VoiceCommandModal: React.FC<VoiceCommandModalProps> = ({ isOpen, on
           />
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button 
-            onClick={handleToggleListening} 
-            variant="outline" 
-            size="icon" 
-            className={isListening ? 'bg-red-100 text-red-600' : ''}
-          >
-            <Mic />
-          </Button>
+          {!isAndroid && (
+            <Button 
+              onClick={handleToggleListening} 
+              variant="outline" 
+              size="icon" 
+              className={isListening ? 'bg-red-100 text-red-600' : ''}
+            >
+              <Mic />
+            </Button>
+          )}
           <div className="flex gap-2">
             <Button onClick={handleClose} variant="outline">
               Cancel

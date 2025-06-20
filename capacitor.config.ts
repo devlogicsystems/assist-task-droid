@@ -20,7 +20,8 @@ const config: CapacitorConfig = {
     permissions: [
       'android.permission.RECORD_AUDIO',
       'android.permission.MODIFY_AUDIO_SETTINGS'
-    ]
+    ],
+    icon: 'public/lovable-uploads/5f55ff69-a65d-45fa-b743-8be28fec7025.png'
   }
 };
 

@@ -5,6 +5,7 @@ import { Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useAndroidDetection } from '@/hooks/useAndroidDetection';
 
 interface DetailsFieldProps {
   isListening?: boolean;
@@ -13,6 +14,7 @@ interface DetailsFieldProps {
 
 export const DetailsField = ({ isListening, handleVoiceInput }: DetailsFieldProps) => {
   const form = useFormContext();
+  const isAndroid = useAndroidDetection();
 
   return (
     <FormField
@@ -23,8 +25,8 @@ export const DetailsField = ({ isListening, handleVoiceInput }: DetailsFieldProp
           <FormLabel>Brief Details</FormLabel>
           <FormControl>
             <div className="relative">
-              <Textarea {...field} placeholder="Enter task details" rows={3} className="pr-10" />
-              {handleVoiceInput && (
+              <Textarea {...field} placeholder="Enter task details" rows={3} className={handleVoiceInput && !isAndroid ? "pr-10" : ""} />
+              {handleVoiceInput && !isAndroid && (
                 <Button
                   type="button"
                   onClick={handleVoiceInput}

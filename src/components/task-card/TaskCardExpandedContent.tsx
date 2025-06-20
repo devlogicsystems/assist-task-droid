@@ -41,7 +41,7 @@ const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task,
           )}
         </div>
 
-        {/* Mobile Edit Button */}
+        {/* Mobile Edit Button - Only icon */}
         {onEdit && (
           <div className="sm:hidden pt-2">
             <Button
@@ -50,11 +50,10 @@ const TaskCardExpandedContent: React.FC<TaskCardExpandedContentProps> = ({ task,
                 onEdit();
               }}
               variant="outline"
-              size="sm"
-              className="w-full flex items-center gap-2"
+              size="icon"
+              className="w-8 h-8"
             >
               <Edit className="w-4 h-4" />
-              Edit Task Details
             </Button>
           </div>
         )}

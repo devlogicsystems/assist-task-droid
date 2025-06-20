@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { TaskFormData } from '@/lib/validations/task';
+import { useAndroidDetection } from '@/hooks/useAndroidDetection';
 
 interface SubjectFieldProps {
   isListening?: boolean;
@@ -14,6 +15,7 @@ interface SubjectFieldProps {
 
 export const SubjectField = ({ isListening, handleVoiceInput }: SubjectFieldProps) => {
   const form = useFormContext<TaskFormData>();
+  const isAndroid = useAndroidDetection();
 
   return (
     <FormField
@@ -25,7 +27,7 @@ export const SubjectField = ({ isListening, handleVoiceInput }: SubjectFieldProp
           <FormControl>
             <div className="flex gap-2">
               <Input {...field} placeholder="Enter task subject" className="flex-1" />
-              {handleVoiceInput && (
+              {handleVoiceInput && !isAndroid && (
                 <Button type="button" onClick={handleVoiceInput} variant="outline" size="sm" className={isListening ? 'bg-red-100' : ''}>
                   <Mic className="w-4 h-4" />
                 </Button>
