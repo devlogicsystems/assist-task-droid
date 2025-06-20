@@ -1,7 +1,6 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 
 interface UseIntelligentVoiceInputProps {
   onResult: (transcript: string) => void;
@@ -34,24 +33,6 @@ export const useIntelligentVoiceInput = ({ onResult, inputRef }: UseIntelligentV
           title: "Voice Input Setup Required",
           description: "To use voice input, please install 'Google Voice Typing' from the Play Store and enable it in your keyboard settings.",
           duration: 8000,
-          action: (
-            <ToastAction
-              altText="Open Play Store"
-              onClick={() => {
-                // Try to open Play Store for Google Voice Typing
-                const playStoreUrl = "market://details?id=com.google.android.googlequicksearchbox";
-                const webPlayStoreUrl = "https://play.google.com/store/apps/details?id=com.google.android.googlequicksearchbox";
-                
-                try {
-                  window.open(playStoreUrl, '_system');
-                } catch {
-                  window.open(webPlayStoreUrl, '_blank');
-                }
-              }}
-            >
-              Open Play Store
-            </ToastAction>
-          )
         });
         return;
       }
