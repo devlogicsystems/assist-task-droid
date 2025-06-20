@@ -11,6 +11,16 @@ Add these permissions inside the `<manifest>` tag but outside the `<application>
 <uses-feature android:name="android.hardware.microphone" android:required="false" />
 ```
 
+## Voice Input Setup for Optimal Experience
+
+For the best voice-to-text experience, users should have Google Voice Typing installed:
+
+1. **Check if Google Voice Typing is installed**: Go to Settings → Language & Input → Virtual Keyboard
+2. **Install Google Voice Typing**: If not present, download from Play Store:
+   - Package: `com.google.android.googlequicksearchbox`
+   - Name: "Google" or "Google Voice Typing"
+3. **Enable Voice Input**: In keyboard settings, ensure voice input is enabled
+
 ## Steps to build APK with proper permissions:
 
 1. First, ensure you have the latest changes:
@@ -34,7 +44,18 @@ Add these permissions inside the `<manifest>` tag but outside the `<application>
    npx cap open android
    ```
 
-5. In Android Studio, manually add the permissions to AndroidManifest.xml if they're not already there.
+5. In Android Studio, verify the permissions are in AndroidManifest.xml:
+   ```xml
+   <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+       <uses-permission android:name="android.permission.RECORD_AUDIO" />
+       <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+       <uses-feature android:name="android.hardware.microphone" android:required="false" />
+       
+       <application>
+           <!-- app content -->
+       </application>
+   </manifest>
+   ```
 
 6. Build the APK in Android Studio:
    - Go to Build → Generate Signed Bundle/APK
@@ -42,4 +63,11 @@ Add these permissions inside the `<manifest>` tag but outside the `<application>
    - Create or use existing keystore
    - Build the APK
 
-The APK will now properly request microphone permissions when installed.
+## Runtime Permission Handling
+
+The app will automatically request microphone permissions when needed. For Android 6.0+ (API 23+):
+- Permissions are requested at runtime when voice features are first used
+- Users can grant/deny permissions through system dialogs
+- The app gracefully handles permission denials with helpful guidance
+
+The APK will now properly request microphone permissions and provide intelligent voice input options.
