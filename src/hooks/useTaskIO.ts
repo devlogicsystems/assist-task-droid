@@ -93,32 +93,38 @@ export const useTaskIO = (
     URL.revokeObjectURL(url);
 
     // Show success message with file location info
+    const openDownloadsFolder = () => {
+      // Try to open the downloads folder
+      if (navigator.userAgent.includes('Windows')) {
+        window.open('file:///C:/Users/' + (process.env.USERNAME || 'User') + '/Downloads');
+      } else if (navigator.userAgent.includes('Mac')) {
+        window.open('file:///Users/' + (process.env.USER || 'User') + '/Downloads');
+      } else {
+        // For other systems, just show a generic message
+        toast({
+          title: "File Location",
+          description: "Check your Downloads folder for the exported file.",
+        });
+      }
+    };
+
     toast({
       title: "Tasks Exported Successfully",
-      description: `${tasksToExport.length} tasks exported to Downloads folder as ${fileName}`,
+      description: `${tasksToExport.length} tasks exported to Downloads folder as ${fileName}. Click below to open Downloads folder.`,
       duration: 5000,
-      action: (
-        <button
-          onClick={() => {
-            // Try to open the downloads folder
-            if (navigator.userAgent.includes('Windows')) {
-              window.open('file:///C:/Users/' + (process.env.USERNAME || 'User') + '/Downloads');
-            } else if (navigator.userAgent.includes('Mac')) {
-              window.open('file:///Users/' + (process.env.USER || 'User') + '/Downloads');
-            } else {
-              // For other systems, just show a generic message
-              toast({
-                title: "File Location",
-                description: "Check your Downloads folder for the exported file.",
-              });
-            }
-          }}
-          className="text-sm underline"
-        >
-          Open Downloads
-        </button>
-      ),
     });
+
+    // Show additional toast with action to open downloads
+    setTimeout(() => {
+      toast({
+        title: "Open Downloads Folder",
+        description: "Click here to open your Downloads folder",
+        action: {
+          label: "Open Downloads",
+          onClick: openDownloadsFolder
+        }
+      });
+    }, 1000);
   };
 
   const handleImportFileSelect = (event: React.ChangeEvent<HTMLInputElement>, importType: 'backup' | 'assigned' = 'backup') => {
