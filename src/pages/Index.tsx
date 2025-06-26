@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { useTaskManager } from '@/hooks/useTaskManager';
-import { useTaskIO } from '@/hooks/useTaskIO';
+import { useTaskIO, ExportOptions } from '@/hooks/useTaskIO';
 import { Task } from '@/types/task';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from '@/components/Header';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import { VoiceCommandModal } from '@/components/VoiceCommandModal';
+import { ExportTasksDialog } from '@/components/ExportTasksDialog';
 import DashboardTab from '@/components/dashboard/DashboardTab';
 import TasksTab from '@/components/tasks/TasksTab';
 import RecurringTab from '@/components/recurring/RecurringTab';
@@ -56,6 +57,7 @@ const Index = () => {
   } = useTaskReminders(tasks, handleUpdateTask);
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleEditRecurringTask = (task: Task) => {
@@ -76,23 +78,46 @@ const Index = () => {
     setActiveTab('tasks');
   };
 
+  const handleExportForAssignee = () => {
+    setIsExportDialogOpen(true);
+  };
+
+  const handleImportAssigned = () => {
+    triggerImport('assigned');
+  };
+
+  const handleBackupTasks = () => {
+    const backupOptions: ExportOptions = {
+      exportType: 'backup'
+    };
+    handleExportTasks(backupOptions);
+  };
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const importType = event.target.getAttribute('data-import-type') as 'backup' | 'assigned' || 'backup';
+    handleImportFileSelect(event, importType);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <input
         type="file"
         ref={importFileRef}
-        onChange={handleImportFileSelect}
+        onChange={handleFileImport}
         accept=".json"
         className="hidden"
       />
       
       <Header
         onNewTask={openCreateTaskModal}
-        onImport={triggerImport}
-        onExport={handleExportTasks}
+        onImport={() => triggerImport('backup')}
+        onExport={() => handleExportTasks()}
         onViewCompleted={handleViewCompleted}
         onVoiceTask={handleVoiceTaskCreation}
         onAddRecurringTask={handleAddRecurringTask}
+        onExportForAssignee={handleExportForAssignee}
+        onImportAssigned={handleImportAssigned}
+        onBackupTasks={handleBackupTasks}
       />
 
       <div className="relative p-3 sm:p-6 pb-8 -mt-8">
@@ -153,6 +178,13 @@ const Index = () => {
         isOpen={isVoiceCommandModalOpen}
         onClose={() => setIsVoiceCommandModalOpen(false)}
         onSubmit={handleVoiceCommandSubmit}
+      />
+
+      <ExportTasksDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        onExport={handleExportTasks}
+        tasks={tasks}
       />
 
       <TaskReminderModal

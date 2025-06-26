@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic, Repeat } from 'lucide-react';
+import { Plus, Menu as MenuIcon, Download, Upload, Eye, Mic, Repeat, Users, Archive, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DarkModeToggle from '@/components/DarkModeToggle';
 import { useTheme } from '@/hooks/useTheme';
@@ -24,9 +25,22 @@ interface HeaderProps {
   onViewCompleted: () => void;
   onVoiceTask: () => void;
   onAddRecurringTask: () => void;
+  onExportForAssignee: () => void;
+  onImportAssigned: () => void;
+  onBackupTasks: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCompleted, onVoiceTask, onAddRecurringTask }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onNewTask, 
+  onImport, 
+  onExport, 
+  onViewCompleted, 
+  onVoiceTask, 
+  onAddRecurringTask,
+  onExportForAssignee,
+  onImportAssigned,
+  onBackupTasks
+}) => {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -69,6 +83,17 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
                   </MenubarItem>
                   <MenubarSeparator />
                   <MenubarSub>
+                    <MenubarSubTrigger>
+                      <Users className="mr-2 h-4 w-4" /> Share Tasks
+                    </MenubarSubTrigger>
+                    <MenubarSubContent>
+                      <MenubarItem onClick={onExportForAssignee}>
+                        <FileDown className="mr-2 h-4 w-4" /> Export for Assignee
+                      </MenubarItem>
+                    </MenubarSubContent>
+                  </MenubarSub>
+                  <MenubarSeparator />
+                  <MenubarSub>
                     <MenubarSubTrigger>Theme</MenubarSubTrigger>
                     <MenubarSubContent>
                       <MenubarRadioGroup value={theme} onValueChange={(value) => setTheme(value as any)}>
@@ -79,8 +104,21 @@ const Header: React.FC<HeaderProps> = ({ onNewTask, onImport, onExport, onViewCo
                     </MenubarSubContent>
                   </MenubarSub>
                   <MenubarSeparator />
-                  <MenubarItem onClick={onImport}>
-                    <Upload className="mr-2 h-4 w-4" /> Import Tasks
+                  <MenubarSub>
+                    <MenubarSubTrigger>
+                      <Upload className="mr-2 h-4 w-4" /> Import Tasks
+                    </MenubarSubTrigger>
+                    <MenubarSubContent>
+                      <MenubarItem onClick={onImport}>
+                        <Archive className="mr-2 h-4 w-4" /> Import Backup
+                      </MenubarItem>
+                      <MenubarItem onClick={onImportAssigned}>
+                        <Users className="mr-2 h-4 w-4" /> Import My Assigned Tasks
+                      </MenubarItem>
+                    </MenubarSubContent>
+                  </MenubarSub>
+                  <MenubarItem onClick={onBackupTasks}>
+                    <Download className="mr-2 h-4 w-4" /> Backup All Tasks
                   </MenubarItem>
                   <MenubarItem onClick={onExport}>
                     <Download className="mr-2 h-4 w-4" /> Export Tasks
