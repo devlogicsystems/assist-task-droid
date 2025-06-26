@@ -1,7 +1,7 @@
+
 import { useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Task } from '@/types/task';
-import { ToastAction } from "@/components/ui/toast";
 
 export interface ExportOptions {
   assignee?: string;
@@ -114,16 +114,12 @@ export const useTaskIO = (
       duration: 5000,
     });
 
-    // Show additional toast with action to open downloads
+    // Show additional toast with simple callback
     setTimeout(() => {
       toast({
         title: "Open Downloads Folder",
-        description: "Click here to open your Downloads folder",
-        action: (
-          <ToastAction altText="Open Downloads" onClick={openDownloadsFolder}>
-            Open Downloads
-          </ToastAction>
-        )
+        description: "Click to open your Downloads folder (or check manually)",
+        onClick: openDownloadsFolder
       });
     }, 1000);
   };
