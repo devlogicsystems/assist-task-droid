@@ -12,8 +12,9 @@ const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date | null
       if (!recurrence.weekDays || recurrence.weekDays.length === 0) return null;
       recurrence.weekDays.forEach(weekDay => {
         let candidate = new Date(after);
-        // Start check from day after 'after' date
-        candidate = addDays(candidate, 1);
+        candidate = addDays(candidate, 1); // Start from next day
+        
+        // Find the next occurrence of this weekday
         while (candidate.getDay() !== weekDay) {
           candidate = addDays(candidate, 1);
         }
@@ -24,16 +25,20 @@ const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date | null
     case 'monthly':
       if (!recurrence.monthDays || recurrence.monthDays.length === 0) return null;
       recurrence.monthDays.forEach(monthDay => {
-        // Check current month
-        let candidateCurrentMonth = set(after, { date: monthDay });
-        if (candidateCurrentMonth.getDate() === monthDay && isAfter(candidateCurrentMonth, after)) {
-          candidates.push(candidateCurrentMonth);
+        let candidate = new Date(after);
+        candidate = addDays(candidate, 1); // Start from next day
+        
+        // Set to the target day of current month
+        let targetDate = set(candidate, { date: monthDay });
+        
+        // If the target date is before or equal to 'after', move to next month
+        if (!isAfter(targetDate, after)) {
+          targetDate = set(addMonths(candidate, 1), { date: monthDay });
         }
         
-        // Check next month
-        let candidateNextMonth = set(addMonths(after, 1), { date: monthDay });
-        if (candidateNextMonth.getDate() === monthDay) {
-          candidates.push(candidateNextMonth);
+        // Ensure the date is valid (handles cases like Feb 31st)
+        if (targetDate.getDate() === monthDay) {
+          candidates.push(targetDate);
         }
       });
       break;
@@ -42,7 +47,9 @@ const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date | null
       if (!recurrence.yearDates || recurrence.yearDates.length === 0) return null;
       recurrence.yearDates.forEach(date => {
         let candidate = new Date(after.getFullYear(), date.month, date.day);
-        if (isBefore(candidate, after) || candidate.getTime() === after.getTime()) {
+        
+        // If this year's date has passed, move to next year
+        if (!isAfter(candidate, after)) {
           candidate = addYears(candidate, 1);
         }
         candidates.push(candidate);
@@ -57,6 +64,7 @@ const getNextOccurrence = (recurrence: TaskRecurrence, after: Date): Date | null
     return null;
   }
 
+  // Sort and return the earliest occurrence
   candidates.sort((a, b) => a.getTime() - b.getTime());
   return candidates[0];
 };
@@ -84,17 +92,15 @@ export const useRecurringTasks = (
       
       console.log(`Template "${template.subject}" has ${existingInstances.length} existing instances`);
       
-      // Find the latest existing instance or start from today
-      let startFromDate = today;
+      // Find the latest existing instance date or use today
+      let lastGeneratedDate = today;
       if (existingInstances.length > 0) {
         const latestInstanceDate = new Date(existingInstances[0].dueDate);
-        if (isAfter(latestInstanceDate, today)) {
-          startFromDate = latestInstanceDate;
-        }
+        lastGeneratedDate = isAfter(latestInstanceDate, today) ? latestInstanceDate : today;
       }
 
-      // Get the first next occurrence after startFromDate
-      let nextDueDate = getNextOccurrence(template.recurrence!, startFromDate);
+      // Get the next occurrence after the last generated date
+      let nextDueDate = getNextOccurrence(template.recurrence!, lastGeneratedDate);
       
       if (!nextDueDate) {
         console.log(`No next occurrence found for template "${template.subject}"`);
@@ -107,7 +113,7 @@ export const useRecurringTasks = (
 
       let currentDate = nextDueDate;
       let generatedCount = 0;
-      const maxGenerations = 10; // Safety limit
+      const maxGenerations = 5; // Reduced safety limit since we only need 5 days ahead
       
       // Generate instances up to 5 days after the next occurrence
       while (currentDate && !isAfter(currentDate, targetEndDate) && generatedCount < maxGenerations) {
@@ -138,8 +144,8 @@ export const useRecurringTasks = (
         const nextOccurrence = getNextOccurrence(template.recurrence!, currentDate);
         
         // Break if we can't find a next occurrence or if it's the same as current (infinite loop protection)
-        if (!nextOccurrence || isSameDay(nextOccurrence, currentDate)) {
-          console.log(`Breaking loop for template "${template.subject}" - no more valid occurrences`);
+        if (!nextOccurrence || isSameDay(nextOccurrence, currentDate) || !isAfter(nextOccurrence, currentDate)) {
+          console.log(`Breaking loop for template "${template.subject}" - no more valid occurrences or same date detected`);
           break;
         }
         
