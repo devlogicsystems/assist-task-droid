@@ -76,7 +76,6 @@ export const useRecurringTasks = (
     let newTasks: Task[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const targetEndDate = addDays(today, 30); // Generate tasks for next 30 days
 
     recurringTemplates.forEach(template => {
       const existingInstances = tasks
@@ -85,33 +84,43 @@ export const useRecurringTasks = (
       
       console.log(`Template "${template.subject}" has ${existingInstances.length} existing instances`);
       
-      let lastDueDate = existingInstances.length > 0 
-        ? new Date(existingInstances[0].dueDate)
-        : addDays(new Date(template.dueDate || new Date()), -1);
+      // Find the next occurrence from today
+      let lastDueDate = today;
+      if (existingInstances.length > 0) {
+        const latestInstance = new Date(existingInstances[0].dueDate);
+        if (isAfter(latestInstance, today)) {
+          lastDueDate = latestInstance;
+        }
+      }
 
-      let nextDueDate: Date | null = lastDueDate;
+      // Get the next occurrence after the last due date
+      let nextDueDate = getNextOccurrence(template.recurrence!, lastDueDate);
+      
+      if (!nextDueDate) {
+        console.log(`No next occurrence found for template "${template.subject}"`);
+        return;
+      }
+
+      // Calculate target end date: 5 days after the next occurrence
+      const targetEndDate = addDays(nextDueDate, 5);
+      console.log(`Template "${template.subject}": Next occurrence ${format(nextDueDate, 'yyyy-MM-dd')}, generating until ${format(targetEndDate, 'yyyy-MM-dd')}`);
+
+      let currentDate = nextDueDate;
       let generatedCount = 0;
       
-      for (let i = 0; i < 100 && generatedCount < 10; i++) { // Safety loop and limit generations
-        if (!template.recurrence) continue;
-        
-        nextDueDate = getNextOccurrence(template.recurrence, nextDueDate);
-        
-        if (!nextDueDate || isAfter(nextDueDate, targetEndDate)) {
-          break;
-        }
-
+      // Generate instances up to 5 days after the next occurrence
+      while (currentDate && !isAfter(currentDate, targetEndDate) && generatedCount < 10) {
         // Check if an instance already exists for this date
         const instanceExists = tasks.some(t =>
           t.recurrenceTemplateId === template.id &&
-          isSameDay(new Date(t.dueDate), nextDueDate)
+          isSameDay(new Date(t.dueDate), currentDate)
         );
 
         if (!instanceExists) {
           const newTask: Task = {
             ...template,
-            id: `${template.id}-recur-${nextDueDate.getTime()}`,
-            dueDate: format(nextDueDate, 'yyyy-MM-dd'),
+            id: `${template.id}-recur-${currentDate.getTime()}`,
+            dueDate: format(currentDate, 'yyyy-MM-dd'),
             status: 'assigned',
             recurrenceTemplateId: template.id,
             createdAt: new Date().toISOString(),
@@ -123,6 +132,9 @@ export const useRecurringTasks = (
           generatedCount++;
           console.log(`Generated recurring task: ${newTask.subject} for ${newTask.dueDate}`);
         }
+
+        // Get the next occurrence after the current date
+        currentDate = getNextOccurrence(template.recurrence!, currentDate);
       }
     });
 
