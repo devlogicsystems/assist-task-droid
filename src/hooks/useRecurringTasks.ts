@@ -84,17 +84,17 @@ export const useRecurringTasks = (
       
       console.log(`Template "${template.subject}" has ${existingInstances.length} existing instances`);
       
-      // Find the next occurrence from today
-      let lastDueDate = today;
+      // Find the latest existing instance or start from today
+      let startFromDate = today;
       if (existingInstances.length > 0) {
-        const latestInstance = new Date(existingInstances[0].dueDate);
-        if (isAfter(latestInstance, today)) {
-          lastDueDate = latestInstance;
+        const latestInstanceDate = new Date(existingInstances[0].dueDate);
+        if (isAfter(latestInstanceDate, today)) {
+          startFromDate = latestInstanceDate;
         }
       }
 
-      // Get the next occurrence after the last due date
-      let nextDueDate = getNextOccurrence(template.recurrence!, lastDueDate);
+      // Get the first next occurrence after startFromDate
+      let nextDueDate = getNextOccurrence(template.recurrence!, startFromDate);
       
       if (!nextDueDate) {
         console.log(`No next occurrence found for template "${template.subject}"`);
@@ -107,9 +107,10 @@ export const useRecurringTasks = (
 
       let currentDate = nextDueDate;
       let generatedCount = 0;
+      const maxGenerations = 10; // Safety limit
       
       // Generate instances up to 5 days after the next occurrence
-      while (currentDate && !isAfter(currentDate, targetEndDate) && generatedCount < 10) {
+      while (currentDate && !isAfter(currentDate, targetEndDate) && generatedCount < maxGenerations) {
         // Check if an instance already exists for this date
         const instanceExists = tasks.some(t =>
           t.recurrenceTemplateId === template.id &&
@@ -134,7 +135,15 @@ export const useRecurringTasks = (
         }
 
         // Get the next occurrence after the current date
-        currentDate = getNextOccurrence(template.recurrence!, currentDate);
+        const nextOccurrence = getNextOccurrence(template.recurrence!, currentDate);
+        
+        // Break if we can't find a next occurrence or if it's the same as current (infinite loop protection)
+        if (!nextOccurrence || isSameDay(nextOccurrence, currentDate)) {
+          console.log(`Breaking loop for template "${template.subject}" - no more valid occurrences`);
+          break;
+        }
+        
+        currentDate = nextOccurrence;
       }
     });
 
